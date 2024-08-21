@@ -1,11 +1,16 @@
 <script>
+import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
 export default {
   name: "Blockchain",
+  components: {
+    Block,
+  },
   data() {
     return {
-      blocks: "",
+        blocks: "",
+      
     };
   },
   methods: {
@@ -26,8 +31,11 @@ export default {
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
       console.log(blockHash.data);
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
-        console.log(dataBlock.data);
-    // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta 
+      console.log(dataBlock.data);
+      // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
+      // bits è la forma compatta del target
+      // size dimensione del blocco in bytes
+      // transection count quantita di transazioni
     },
   },
   mounted() {
@@ -37,7 +45,10 @@ export default {
 </script>
 
 <template>
-  <div v-for="(block, i) in 10" @click="GetBlock(i)">ciaoao</div>
+  <div v-for="(block, i) in 10" @click="GetBlock(i)">
+    <Block :value="blocks"></Block>
+    ciaoao
+  </div>
   <div>ciaoaoaoa</div>
 </template>
 
