@@ -3,19 +3,21 @@ export default {
   name: "Block",
   props: {
     value: {
-      type: Number,
+      type: String,
+      required: true,
     },
   },
   data() {
     return {};
   },
-  mounted() {
-    //   console.log(
-    //     value
-    // );
-  },
+  mounted() {},
 };
 </script>
-<template>{{ value }}</template>
+<template>
+  <div>
+    {{ value }}
+  </div>
+  <button @click="$emit('close')">chiudi</button>
+</template>
 
 <style></style>

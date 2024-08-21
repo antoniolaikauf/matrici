@@ -9,8 +9,8 @@ export default {
   },
   data() {
     return {
-        blocks: "",
-      
+      blocks: "",
+      show_block: true,
     };
   },
   methods: {
@@ -19,7 +19,7 @@ export default {
         const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
         const data1 = await axios("https://blockstream.info/api/block-height/857772"); // blocco specifico
         const data2 = await axios("https://blockstream.info/api/block/" + data1.data); // dati blocco
-        this.blocks = data.data;
+        // this.blocks = data.data;
         console.log(data2.data);
         console.log(data1.data);
         console.log(data);
@@ -28,7 +28,11 @@ export default {
       }
     },
     async GetBlock(i) {
+      this.show_block = false;
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
+      this.blocks = blockHash.data;
+      console.log(typeof this.blocks);
+
       console.log(blockHash.data);
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
       console.log(dataBlock.data);
@@ -36,6 +40,11 @@ export default {
       // bits è la forma compatta del target
       // size dimensione del blocco in bytes
       // transection count quantita di transazioni
+    },
+      blockchain() {
+        console.log('ciicicic');
+        
+      this.show_block = true;
     },
   },
   mounted() {
@@ -45,11 +54,10 @@ export default {
 </script>
 
 <template>
-  <div v-for="(block, i) in 10" @click="GetBlock(i)">
-    <Block :value="blocks"></Block>
-    ciaoao
+  <div v-for="(block, i) in 10" v-if="show_block">
+    <div @click="GetBlock(i)">{{ i }}</div>
   </div>
-  <div>ciaoaoaoa</div>
+  <Block :value="blocks" v-if="!show_block" @close="blockchain"></Block>
 </template>
 
 <style scoped lang="sass"></style>
