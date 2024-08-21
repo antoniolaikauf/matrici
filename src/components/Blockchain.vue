@@ -1,9 +1,7 @@
 <script >
-
 export default {
     name:'Blockchain'
 }
-
 </script>
 
 <template>
@@ -12,6 +10,6 @@ export default {
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="sass">
 
 </style>
