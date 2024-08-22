@@ -60,7 +60,7 @@ export default {
       const cube = new THREE.Mesh(geometry, material);
 
       cube.position.y = distance;
-      distance +=distance
+      distance += distance;
       group.add(cube);
     }
 
@@ -70,6 +70,10 @@ export default {
 
     const animation = () => {
       requestAnimationFrame(animation);
+      group.children.forEach(block => {
+        block.rotation.y+=0.01
+      });
+
       // cube.rotation.y += 0.01;
       renderer.render(scene, camera);
     };
