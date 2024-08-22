@@ -17,8 +17,6 @@ export default {
     async call() {
       try {
         const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
-        const data1 = await axios("https://blockstream.info/api/block-height/857772"); // blocco specifico
-        const data2 = await axios("https://blockstream.info/api/block/" + data1.data); // dati blocco
         // this.blocks = data.data;
         console.log(data);
       } catch (error) {
@@ -52,15 +50,15 @@ export default {
     renderer.setSize(space.clientWidth, space.clientHeight);
     space.appendChild(renderer.domElement);
 
-    let distance = 2;
+    let distance = 0;
+    const numbblock = 5;
     const group = new THREE.Group();
-    for (let i = 1; i < 3; i++) {
+    for (let i = 0; i < numbblock; i++) {
       const geometry = new THREE.BoxGeometry(); // dimensioni box
       const material = new THREE.MeshBasicMaterial({ color: "red" });
       const cube = new THREE.Mesh(geometry, material);
-
-      cube.position.y = distance;
-      distance += distance;
+      cube.position.set(0, distance, 0)
+      distance += 2;
       group.add(cube);
     }
 
@@ -70,11 +68,9 @@ export default {
 
     const animation = () => {
       requestAnimationFrame(animation);
-      group.children.forEach(block => {
-        block.rotation.y+=0.01
+      group.children.forEach((block, i) => {
+        block.rotation.y += 0.01;
       });
-
-      // cube.rotation.y += 0.01;
       renderer.render(scene, camera);
     };
     animation();
@@ -115,9 +111,4 @@ export default {
   width: 100%;
   display: block;
 }
-
-// canvas {
-//   width: 100%;
-//   height: 100%;
-// }
 </style>
