@@ -52,20 +52,31 @@ export default {
     renderer.setSize(space.clientWidth, space.clientHeight);
     space.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry(); // dimensioni box
-    const material = new THREE.MeshBasicMaterial({ color: "red" });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-    camera.position.z = 5;
+    let distance = 2;
+    const group = new THREE.Group();
+    for (let i = 1; i < 3; i++) {
+      const geometry = new THREE.BoxGeometry(); // dimensioni box
+      const material = new THREE.MeshBasicMaterial({ color: "red" });
+      const cube = new THREE.Mesh(geometry, material);
+
+      cube.position.y = distance;
+      distance +=distance
+      group.add(cube);
+    }
+
+    scene.add(group);
+    camera.position.z = 6;
+    camera.position.y = 5;
 
     const animation = () => {
       requestAnimationFrame(animation);
-      cube.rotation.y += 0.01;
+      // cube.rotation.y += 0.01;
       renderer.render(scene, camera);
     };
     animation();
 
     window.addEventListener("resize", () => {
+      // responsive
       const width = space.clientWidth;
       const height = space.clientHeight;
       camera.aspect = width / height;
