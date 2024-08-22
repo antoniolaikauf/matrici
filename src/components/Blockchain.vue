@@ -38,19 +38,19 @@ export default {
       // transection count quantita di transazioni
     },
     blockchain() {
-      console.log("ciicicic");
-
       this.show_block = true;
     },
   },
   mounted() {
     this.call();
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const space = document.getElementById("container_blockchain");
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false,alpha:true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    renderer.setSize(space.clientWidth, space.clientHeight);
+    space.appendChild(renderer.domElement);
 
     const geometry = new THREE.BoxGeometry(); // dimensioni box
     const material = new THREE.MeshBasicMaterial({ color: "red" });
@@ -64,11 +64,21 @@ export default {
       renderer.render(scene, camera);
     };
     animation();
+
+    window.addEventListener("resize", () => {
+      const width = space.clientWidth;
+      const height = space.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
   },
 };
 </script>
 
 <template>
+  <main id="container_blockchain"></main>
   <!-- <div v-for="(block, i) in 10" v-if="show_block">
     <div @click="GetBlock(i)">{{ i }}</div>
   </div>
@@ -81,14 +91,18 @@ export default {
 
 <style lang="scss">
 @use "./../style/general.scss" as *;
-
-body {
-  background: url("../../public/img/stars.jpg");
-  background-size: cover;
+#container_blockchain {
+  height: calc(100vh - 90px);
+  width: 100%;
 }
 #block {
   height: 100%;
   width: 100%;
   display: block;
 }
+
+// canvas {
+//   width: 100%;
+//   height: 100%;
+// }
 </style>

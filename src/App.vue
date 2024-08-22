@@ -10,10 +10,14 @@ export default {
 </script>
 
 <template>
-  <header_page></header_page>
+  <header_page> </header_page>
   <Blockchain />
 </template>
 
 <style lang="scss">
 @use "./style/general.scss" as *;
+body {
+  background: url("../public/img/star.jpg");
+  // background-size: cover;
+}
 </style>
