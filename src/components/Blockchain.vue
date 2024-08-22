@@ -43,16 +43,16 @@ export default {
     this.call();
     const space = document.getElementById("container_blockchain");
 
-    const scene = new THREE.Scene(); // *
-    const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // *
+    const scene = new THREE.Scene(); // * contenitore per oggetti 3d
+    const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // * punto di vista
     // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered. 
     
     const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
     directionalLight.position.set(1, 1, 10); // Posizionamento della luce asse x y z più è alto lo z e più sembrera che venga dalla telecamera
     scene.add(directionalLight);
     
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // *
-    renderer.setSize(space.clientWidth, space.clientHeight);
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // * generatore immagini 
+    renderer.setSize(space.clientWidth, space.clientHeight); // spazio immagini
     space.appendChild(renderer.domElement);
 
     let distance = 0;
@@ -67,7 +67,7 @@ export default {
         emissive: new THREE.Color(0, 0, 0),
       });
 
-      const cube = new THREE.Mesh(geometry, material); // create cube
+      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale 
       cube.position.set(0, distance, 0);
       distance += 2;
       group.add(cube);
@@ -77,7 +77,7 @@ export default {
     camera.position.z = 6;
     camera.position.y = 5;
 
-    const animation = () => { // animation cube
+    const animation = () => { // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
       requestAnimationFrame(animation);
       group.children.forEach((block, i) => {
         block.rotation.y += 0.01; // rotation or position
