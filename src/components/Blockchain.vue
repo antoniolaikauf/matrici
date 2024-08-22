@@ -2,6 +2,7 @@
 import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
+import { ior } from "three/src/nodes/core/PropertyNode.js";
 export default {
   name: "Blockchain",
   components: {
@@ -49,15 +50,21 @@ export default {
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
     renderer.setSize(space.clientWidth, space.clientHeight);
     space.appendChild(renderer.domElement);
-
+    const light = new THREE.AmbientLight(0xffffff, 1000);
+    scene.add(light);
     let distance = 0;
     const numbblock = 5;
     const group = new THREE.Group();
     for (let i = 0; i < numbblock; i++) {
       const geometry = new THREE.BoxGeometry(); // dimensioni box
-      const material = new THREE.MeshBasicMaterial({ color: "red" });
+      let material = new THREE.MeshStandardMaterial({
+        color: 0x000000,
+        emissive: 0x0, // Nessuna emissione di luce
+        roughness: 1, // Superficie completamente opaca
+        metalness: 0,
+      });
       const cube = new THREE.Mesh(geometry, material);
-      cube.position.set(0, distance, 0)
+      cube.position.set(0, distance, 0);
       distance += 2;
       group.add(cube);
     }
