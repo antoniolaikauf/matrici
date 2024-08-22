@@ -1,16 +1,19 @@
 <script>
-import Blockchain from './components/Blockchain.vue'
+import Blockchain from "./components/Blockchain.vue";
+import header_page from "./components/header.vue";
 export default {
   components: {
-    Blockchain
-  }
-}
+    Blockchain,
+    header_page,
+  },
+};
 </script>
 
 <template>
-  <Blockchain msg="Vite + Vue" />
+  <header_page></header_page>
+  <Blockchain />
 </template>
 
-<style  lang="scss">
+<style lang="scss">
 @use "./style/general.scss" as *;
 </style>

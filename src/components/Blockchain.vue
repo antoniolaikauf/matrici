@@ -48,15 +48,16 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ antialias: false,alpha:true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
     const geometry = new THREE.BoxGeometry(); // dimensioni box
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const material = new THREE.MeshBasicMaterial({ color: "red" });
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
     camera.position.z = 5;
+
     const animation = () => {
       requestAnimationFrame(animation);
       cube.rotation.y += 0.01;
@@ -81,11 +82,13 @@ export default {
 <style lang="scss">
 @use "./../style/general.scss" as *;
 
+body {
+  background: url("../../public/img/stars.jpg");
+  background-size: cover;
+}
 #block {
   height: 100%;
   width: 100%;
   display: block;
-  // background: url('../../public/img/stars.jpg') no-repeat center center;
-  // background-size: cover;
 }
 </style>
