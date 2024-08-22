@@ -20,4 +20,6 @@ export default {
   <button @click="$emit('close')">chiudi</button>
 </template>
 
-<style></style>
+<style  lang="scss">
+@use "./../style/general.scss" as *;
+</style>
