@@ -47,8 +47,10 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000);
 
-    const spotLight = new THREE.SpotLight(0xffffff, 1.0);
-    console.log(spotLight);
+    // Creazione di una luce direzionale per illuminare il cubo
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
+    directionalLight.position.set(1, 1, 1); // Posizionamento della luce
+    scene.add(directionalLight);
 
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
     renderer.setSize(space.clientWidth, space.clientHeight);
@@ -58,12 +60,12 @@ export default {
     const numbblock = 5;
     const group = new THREE.Group();
     for (let i = 0; i < numbblock; i++) {
-      const geometry = new THREE.BoxGeometry(); // dimensioni box
+      const geometry = new THREE.BoxGeometry(1.2, 1.2, 1.2); // dimensioni box
       let material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(138 / 255, 138 / 255, 138 / 255), // Grigio acciaio RGB(138, 138, 138)
+        color: new THREE.Color(0x8a8a8a),
         metalness: 1, // Alta metallicità
         roughness: 0.3, // Leggera ruvidità
-        emissive: new THREE.Color(0, 0, 0), // Nessuna emissione
+        emissive: new THREE.Color(0, 0, 0),
       });
       console.log(material);
 
@@ -82,10 +84,6 @@ export default {
       group.children.forEach((block, i) => {
         block.rotation.y += 0.01;
       });
-      spotLight.position.set(0, 10, 0); // Posiziona la luce sopra i blocchi
-      spotLight.target.position.set(0, 0, 0); // La luce punta verso il centro dei blocchi
-      scene.add(spotLight);
-      scene.add(spotLight.target); // Aggiungi il target per la luce
       renderer.render(scene, camera);
     };
     animation();
