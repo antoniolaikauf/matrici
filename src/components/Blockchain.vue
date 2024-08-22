@@ -44,46 +44,33 @@ export default {
     },
   },
   mounted() {
-    this.call()
-    // scena
-    const block = document.getElementById("block");
+    this.call();
     const scene = new THREE.Scene();
-    // scene.background = new THREE.Color("skyblue");
-    // // camera
-    // const fov = 35;
-    // const aspect = block.clientWidth / block.clientHeight;
-    // const near = 0.1;
-    // const far = 100;
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    // const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    // camera.position.set(0, 0, 10);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    // const geometry = new THREE.BoxGeometry(1, 1, 1);
-    // const material = new THREE.MeshBasicMaterial();
-    // const cube = new THREE.Mesh(geometry, material);
-    // scene.add(cube);
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      block,
-      alpha: true,
-    });
-    // renderer.setSize(block.clientWidth, block.clientHeight);
-    // renderer.setPixelRatio(window.devicePixelRatio);
-    // block.append(renderer.domElement);
-    // renderer.render(scene, camera);
+    const geometry = new THREE.BoxGeometry(); // dimensioni box 
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+    camera.position.z = 5;
+    renderer.render(scene, camera);
   },
 };
 </script>
 
 <template>
-  <div v-for="(block, i) in 10" v-if="show_block">
+  <!-- <div v-for="(block, i) in 10" v-if="show_block">
     <div @click="GetBlock(i)">{{ i }}</div>
   </div>
 
-  <div>
-    <canvas id="block"></canvas>
+  <div id="block">
+    <canvas></canvas>
   </div>
-  <Block :value="blocks" v-if="!show_block" @close="blockchain"></Block>
+  <Block :value="blocks" v-if="!show_block" @close="blockchain"></Block> -->
 </template>
 
 <style lang="scss">
@@ -93,7 +80,7 @@ export default {
   height: 100%;
   width: 100%;
   display: block;
-  background: url('../../public/img/stars.jpg') no-repeat center center;
-  background-size: cover;
+  // background: url('../../public/img/stars.jpg') no-repeat center center;
+  // background-size: cover;
 }
 </style>
