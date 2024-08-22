@@ -2,6 +2,7 @@
 import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
+import { Wireframe } from "three/examples/jsm/Addons.js";
 import { ior } from "three/src/nodes/core/PropertyNode.js";
 export default {
   name: "Blockchain",
@@ -28,7 +29,6 @@ export default {
       this.show_block = false;
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
       this.blocks = blockHash.data;
-      console.log(typeof this.blocks);
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
       console.log(dataBlock.data);
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
@@ -47,22 +47,26 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000);
 
+    const spotLight = new THREE.SpotLight(0xffffff, 1.0);
+    console.log(spotLight);
+
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
     renderer.setSize(space.clientWidth, space.clientHeight);
     space.appendChild(renderer.domElement);
-    const light = new THREE.AmbientLight(0xffffff, 1000);
-    scene.add(light);
+
     let distance = 0;
     const numbblock = 5;
     const group = new THREE.Group();
     for (let i = 0; i < numbblock; i++) {
       const geometry = new THREE.BoxGeometry(); // dimensioni box
       let material = new THREE.MeshStandardMaterial({
-        color: 0x000000,
-        emissive: 0x0, // Nessuna emissione di luce
-        roughness: 1, // Superficie completamente opaca
-        metalness: 0,
+        color: new THREE.Color(138 / 255, 138 / 255, 138 / 255), // Grigio acciaio RGB(138, 138, 138)
+        metalness: 1, // Alta metallicità
+        roughness: 0.3, // Leggera ruvidità
+        emissive: new THREE.Color(0, 0, 0), // Nessuna emissione
       });
+      console.log(material);
+
       const cube = new THREE.Mesh(geometry, material);
       cube.position.set(0, distance, 0);
       distance += 2;
@@ -78,6 +82,10 @@ export default {
       group.children.forEach((block, i) => {
         block.rotation.y += 0.01;
       });
+      spotLight.position.set(0, 10, 0); // Posiziona la luce sopra i blocchi
+      spotLight.target.position.set(0, 0, 0); // La luce punta verso il centro dei blocchi
+      scene.add(spotLight);
+      scene.add(spotLight.target); // Aggiungi il target per la luce
       renderer.render(scene, camera);
     };
     animation();
@@ -112,6 +120,7 @@ export default {
 #container_blockchain {
   height: calc(100vh - 90px);
   width: 100%;
+  // background-color: rgb(107, 93, 93);
 }
 #block {
   height: 100%;

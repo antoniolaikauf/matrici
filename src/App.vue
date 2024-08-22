@@ -16,8 +16,8 @@ export default {
 
 <style lang="scss">
 @use "./style/general.scss" as *;
-body {
-  background: url("../public/img/star.jpg");
-  // background-size: cover;
-}
+// body {
+//   background: url("../public/img/star.jpg");
+//   // background-size: cover;
+// }
 </style>
