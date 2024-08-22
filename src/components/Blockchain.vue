@@ -49,7 +49,7 @@ export default {
 
     // Creazione di una luce direzionale per illuminare il cubo
     const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
-    directionalLight.position.set(1, 1, 1); // Posizionamento della luce
+    directionalLight.position.set(1, 1, 10); // Posizionamento della luce
     scene.add(directionalLight);
 
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
