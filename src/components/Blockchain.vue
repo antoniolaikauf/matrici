@@ -2,8 +2,6 @@
 import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
-import { Wireframe } from "three/examples/jsm/Addons.js";
-import { ior } from "three/src/nodes/core/PropertyNode.js";
 export default {
   name: "Blockchain",
   components: {
@@ -41,18 +39,19 @@ export default {
     },
   },
   mounted() {
+    // * componenti importanti 
     this.call();
     const space = document.getElementById("container_blockchain");
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000);
-
-    // Creazione di una luce direzionale per illuminare il cubo
+    const scene = new THREE.Scene(); // *
+    const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // *
+    // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered. 
+    
     const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
-    directionalLight.position.set(1, 1, 10); // Posizionamento della luce
+    directionalLight.position.set(1, 1, 10); // Posizionamento della luce asse x y z più è alto lo z e più sembrera che venga dalla telecamera
     scene.add(directionalLight);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // *
     renderer.setSize(space.clientWidth, space.clientHeight);
     space.appendChild(renderer.domElement);
 
@@ -60,16 +59,15 @@ export default {
     const numbblock = 5;
     const group = new THREE.Group();
     for (let i = 0; i < numbblock; i++) {
-      const geometry = new THREE.BoxGeometry(1.2, 1.2, 1.2); // dimensioni box
+      const geometry = new THREE.BoxGeometry(1.2, 1.2, 1.2); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0x8a8a8a),
-        metalness: 1, // Alta metallicità
-        roughness: 0.3, // Leggera ruvidità
+        metalness: 1, //  metallicità
+        roughness: 0.3,  //  ruvidità
         emissive: new THREE.Color(0, 0, 0),
       });
-      console.log(material);
 
-      const cube = new THREE.Mesh(geometry, material);
+      const cube = new THREE.Mesh(geometry, material); // create cube
       cube.position.set(0, distance, 0);
       distance += 2;
       group.add(cube);
@@ -79,10 +77,10 @@ export default {
     camera.position.z = 6;
     camera.position.y = 5;
 
-    const animation = () => {
+    const animation = () => { // animation cube
       requestAnimationFrame(animation);
       group.children.forEach((block, i) => {
-        block.rotation.y += 0.01;
+        block.rotation.y += 0.01; // rotation or position
       });
       renderer.render(scene, camera);
     };
