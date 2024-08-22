@@ -52,12 +52,17 @@ export default {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry(); // dimensioni box 
+    const geometry = new THREE.BoxGeometry(); // dimensioni box
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
     camera.position.z = 5;
-    renderer.render(scene, camera);
+    const animation = () => {
+      requestAnimationFrame(animation);
+      cube.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    };
+    animation();
   },
 };
 </script>
