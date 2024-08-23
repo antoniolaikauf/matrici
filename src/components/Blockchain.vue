@@ -1,22 +1,19 @@
 <script>
 import { defineAsyncComponent } from "vue";
-// import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
 // non fanno più parte della libreria bisogna importarli manualemnte
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-const define_call = defineAsyncComponent(() => import("./Block.vue"));
-
 export default {
   name: "Blockchain",
   components: {
-    // Block,
+    block: defineAsyncComponent(() => import("./Block.vue")), // lazy loader viene caricata solo quando si ha bisogno del componente
   },
   data() {
     return {
       blocks: "",
-      show_block: true,
+      show_block: false,
     };
   },
   methods: {
@@ -30,18 +27,18 @@ export default {
       }
     },
     async GetBlock(i) {
-      this.show_block = false;
+      this.show_block = true;
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
       this.blocks = blockHash.data;
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
-      console.log(dataBlock.data);
+
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
       // bits è la forma compatta del target
       // size dimensione del blocco in bytes
       // transection count quantita di transazioni
     },
     blockchain() {
-      this.show_block = true;
+      this.show_block = false;
     },
   },
   mounted() {
@@ -164,15 +161,11 @@ export default {
 </script>
 
 <template>
+  <block v-if="show_block" :value="blocks" @close="blockchain" />
   <main id="container_blockchain"></main>
-  <!-- <div v-for="(block, i) in 10" v-if="show_block">
-    <div @click="GetBlock(i)">{{ i }}</div>
+  <div v-for="(block, i) in 10" v-if="!show_block">
+    <div @click="GetBlock(i)">{{ i }} CICICICICICIICICICICI</div>
   </div>
-
-  <div id="block">
-    <canvas></canvas>
-  </div>
-  <Block :value="blocks" v-if="!show_block" @close="blockchain"></Block> -->
 </template>
 
 <style lang="scss">
