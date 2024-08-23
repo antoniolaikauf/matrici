@@ -77,6 +77,7 @@ export default {
       const loader = new FontLoader();
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
+        // TESTO
         const numb_geometry = new TextGeometry("858045", {
           font: font,
           size: 0.15,
@@ -90,6 +91,7 @@ export default {
         });
 
         const numb_mat = new THREE.MeshStandardMaterial({
+          // materiale testo
           color: new THREE.Color(0xff0000),
           metalness: 1, //  metallicità
           roughness: 0.3, //  ruvidità
@@ -100,32 +102,33 @@ export default {
         for (let i = 0; i < 4; i++) {
           const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
           const string_mesh = new THREE.Mesh(string_geometry, numb_mat);
-          meshs.push({ numb_mesh: numb_mesh, string_mesh: string_mesh });
+          meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
           cube.add(numb_mesh, string_mesh);
         }
 
-        const size_mesh = new THREE.Box3().setFromObject(meshs[0].numb_mesh);
+        const size_mesh = new THREE.Box3().setFromObject(meshs[0].NUMB_MESH); // dimensioni
         var numb_size = new THREE.Vector3();
         var size_number_block = size_mesh.getSize(numb_size);
 
-        const size_mesh_tring = new THREE.Box3().setFromObject(meshs[0].string_mesh);
+        const size_mesh_tring = new THREE.Box3().setFromObject(meshs[0].STRING_MESH); // dimensioni
         var string_size = new THREE.Vector3();
         var size_string_block = size_mesh_tring.getSize(string_size);
 
-        meshs[0].numb_mesh.position.set(-(size_number_block.x / 2), -(size_number_block.y / 2), 0); // Faccia frontale
-        meshs[0].string_mesh.position.set(-0.4, -(size_number_block.y / 2) + 0.3, 0);
+        // cordinate testo su cubo
+        meshs[0].NUMB_MESH.position.set(-(size_number_block.x / 2), -size_number_block.y / 2, 0); // Faccia frontale
+        meshs[0].STRING_MESH.position.set(-0.4, -size_number_block.y / 2 + 0.3, 0);
 
-        meshs[1].numb_mesh.position.set(size_number_block.x / 2, -(size_number_block.y / 2), -0); // Faccia posteriore
-        meshs[1].string_mesh.position.set(0.4, -(size_number_block.y / 2) + 0.3, 0);
-        meshs[1].numb_mesh.rotation.y = meshs[1].string_mesh.rotation.y = Math.PI;
+        meshs[1].NUMB_MESH.position.set(size_number_block.x / 2, -size_number_block.y / 2, -0); // Faccia posteriore
+        meshs[1].STRING_MESH.position.set(0.4, -size_number_block.y / 2 + 0.3, 0);
+        meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
 
-        meshs[2].numb_mesh.position.set(0, -(size_number_block.y / 2), 0.3); // Faccia destra
-        meshs[2].string_mesh.position.set(0, -(size_number_block.y / 2) + 0.3, size_string_block.x / 2);
-        meshs[2].numb_mesh.rotation.y = meshs[2].string_mesh.rotation.y = Math.PI / 2;
+        meshs[2].NUMB_MESH.position.set(0, -size_number_block.y / 2, 0.3); // Faccia destra
+        meshs[2].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, size_string_block.x / 2);
+        meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
 
-        meshs[3].numb_mesh.position.set(0, -(size_number_block.y / 2), -0.3); // Faccia sinistra
-        meshs[3].string_mesh.position.set(0, -(size_number_block.y / 2) + 0.3, -(size_string_block.x / 2));
-        meshs[3].numb_mesh.rotation.y = meshs[3].string_mesh.rotation.y = -Math.PI / 2;
+        meshs[3].NUMB_MESH.position.set(0, -size_number_block.y / 2, -0.3); // Faccia sinistra
+        meshs[3].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
+        meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
       });
       group.add(cube);
     }
