@@ -76,25 +76,41 @@ export default {
 
       const loader = new FontLoader();
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
-        const geometry = new TextGeometry("858045", {
+        const geometry_number = new TextGeometry("858045", {
           font: font,
           size: 0.2,
           depth: 0.7, // inizia dal centro del cubo
-          // curveSegments: 12,
-          // bevelEnabled: true,
-          // bevelThickness: 10,
-          // bevelSize: 8,
-          // bevelOffset: 0,
-          // bevelSegments: 5,
         });
-        const txt_mat = new THREE.MeshPhongMaterial({ color: 0xffffff });
-        const txt_mesh = new THREE.Mesh(geometry, txt_mat);
+        const txt_mat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(0xff0000),
+          metalness: 1, //  metallicità
+          roughness: 0.3, //  ruvidità
+          emissive: new THREE.Color(0, 0, 0),
+        });
+        const txt_mesh = new THREE.Mesh(geometry_number, txt_mat);
         const size_mesh = new THREE.Box3().setFromObject(txt_mesh);
         var size = new THREE.Vector3();
         var size_number_block = size_mesh.getSize(size);
 
         txt_mesh.position.x = -(size_number_block.x / 2);
         txt_mesh.position.y = -(size_number_block.y / 2);
+
+        const geometry_string = new TextGeometry("Number Block", {
+          font: font,
+          size: 0.1,
+          depth: 0.7, // inizia dal centro del cubo
+        });
+        const string_mat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(0xff0000),
+          metalness: 1,
+          roughness: 0.3,
+          emissive: new THREE.Color(0, 0, 0),
+        });
+        const string_mesh = new THREE.Mesh(geometry_string, string_mat);
+        
+        string_mesh.position.x = -0.4;
+        string_mesh.position.y = txt_mesh.position.y + 0.3;
+        cube.add(string_mesh);
         cube.add(txt_mesh);
       });
       group.add(cube);
