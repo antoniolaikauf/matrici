@@ -83,39 +83,51 @@ export default {
           depth: 0.7, // inizia dal centro del cubo
           align: "center",
         });
-        
+
         const numb_mat = new THREE.MeshStandardMaterial({
           color: new THREE.Color(0xff0000),
           metalness: 1, //  metallicità
           roughness: 0.3, //  ruvidità
           emissive: new THREE.Color(0, 0, 0),
         });
-        const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
-        // dimensioni number
-        const size_mesh = new THREE.Box3().setFromObject(numb_mesh);
+
+        const meshs = [];
+        for (let i = 0; i < 4; i++) {
+          const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
+          meshs.push(numb_mesh);
+          cube.add(numb_mesh);
+        }
+
+        const size_mesh = new THREE.Box3().setFromObject(meshs[0]);
         var numb_size = new THREE.Vector3();
         var size_number_block = size_mesh.getSize(numb_size);
         console.log(size_number_block);
 
-        numb_mesh.position.x = -(size_number_block.x / 2);
-        numb_mesh.position.y = -(size_number_block.y / 2);
+        meshs[0].position.set(-(size_number_block.x / 2), -(size_number_block.y / 2), 0); // Faccia frontale
+        meshs[1].position.set((size_number_block.x / 2), -(size_number_block.y / 2), -0); // Faccia posteriore
+        meshs[1].rotation.y = Math.PI;
 
-        const string_geometry = new TextGeometry("Number Block", {
-          font: font,
-          size: 0.1,
-          depth: 0.7, // inizia dal centro del cubo
-        });
-        const string_mat = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(0xff0000),
-          metalness: 1,
-          roughness: 0.3,
-          emissive: new THREE.Color(0, 0, 0),
-        });
-        const string_mesh = new THREE.Mesh(string_geometry, string_mat);
+        meshs[2].position.set(0, 0, 0.3); // Faccia destra
+        meshs[2].rotation.y = Math.PI / 2;
 
-        string_mesh.position.x = -0.4;
-        string_mesh.position.y = numb_mesh.position.y + 0.3;
-        cube.add(numb_mesh,string_mesh);
+        meshs[3].position.set(0, 0, -0.3); // Faccia sinistra
+        meshs[3].rotation.y = -Math.PI / 2;
+
+        // dimensioni number
+
+        // numb_mesh.position.x = -(size_number_block.x / 2);
+        // numb_mesh.position.y = -(size_number_block.y / 2);
+
+        // const string_geometry = new TextGeometry("Number Block", {
+        //   font: font,
+        //   size: 0.1,
+        //   depth: 0.7, // inizia dal centro del cubo
+        // });
+        // const string_mesh = new THREE.Mesh(string_geometry, numb_mat);
+
+        // string_mesh.position.x = -0.4;
+        // string_mesh.position.y = numb_mesh.position.y + 0.3;
+        // cube.add(numb_mesh,string_mesh);
       });
       group.add(cube);
     }
