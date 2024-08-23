@@ -73,29 +73,34 @@ export default {
       const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
       cube.position.set(0, distance, 0);
       distance += 2;
-
+      // text
       const loader = new FontLoader();
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
-        const geometry_number = new TextGeometry("858045", {
+        // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
+        const numb_geometry = new TextGeometry("858045", {
           font: font,
-          size: 0.2,
+          size: 0.15,
           depth: 0.7, // inizia dal centro del cubo
+          align: "center",
         });
-        const txt_mat = new THREE.MeshStandardMaterial({
+        
+        const numb_mat = new THREE.MeshStandardMaterial({
           color: new THREE.Color(0xff0000),
           metalness: 1, //  metallicità
           roughness: 0.3, //  ruvidità
           emissive: new THREE.Color(0, 0, 0),
         });
-        const txt_mesh = new THREE.Mesh(geometry_number, txt_mat);
-        const size_mesh = new THREE.Box3().setFromObject(txt_mesh);
-        var size = new THREE.Vector3();
-        var size_number_block = size_mesh.getSize(size);
+        const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
+        // dimensioni number
+        const size_mesh = new THREE.Box3().setFromObject(numb_mesh);
+        var numb_size = new THREE.Vector3();
+        var size_number_block = size_mesh.getSize(numb_size);
+        console.log(size_number_block);
 
-        txt_mesh.position.x = -(size_number_block.x / 2);
-        txt_mesh.position.y = -(size_number_block.y / 2);
+        numb_mesh.position.x = -(size_number_block.x / 2);
+        numb_mesh.position.y = -(size_number_block.y / 2);
 
-        const geometry_string = new TextGeometry("Number Block", {
+        const string_geometry = new TextGeometry("Number Block", {
           font: font,
           size: 0.1,
           depth: 0.7, // inizia dal centro del cubo
@@ -106,12 +111,11 @@ export default {
           roughness: 0.3,
           emissive: new THREE.Color(0, 0, 0),
         });
-        const string_mesh = new THREE.Mesh(geometry_string, string_mat);
-        
+        const string_mesh = new THREE.Mesh(string_geometry, string_mat);
+
         string_mesh.position.x = -0.4;
-        string_mesh.position.y = txt_mesh.position.y + 0.3;
-        cube.add(string_mesh);
-        cube.add(txt_mesh);
+        string_mesh.position.y = numb_mesh.position.y + 0.3;
+        cube.add(numb_mesh,string_mesh);
       });
       group.add(cube);
     }
