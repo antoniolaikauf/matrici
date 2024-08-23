@@ -2,9 +2,9 @@
 import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
-// non fanno più parte della libreria bisogna importarli manualemnte 
+// non fanno più parte della libreria bisogna importarli manualemnte
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
-import {TextGeometry} from 'three/addons/geometries/TextGeometry.js'
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 export default {
   name: "Blockchain",
   components: {
@@ -62,7 +62,7 @@ export default {
     const numbblock = 5;
     const group = new THREE.Group();
     for (let i = 0; i < numbblock; i++) {
-      const geometry = new THREE.BoxGeometry(1.2, 1.2, 1.2); // dimensioni block
+      const geometry = new THREE.BoxGeometry(1.3, 1.3, 1.3); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0x8a8a8a),
         metalness: 1, //  metallicità
@@ -76,10 +76,10 @@ export default {
 
       const loader = new FontLoader();
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
-        const geometry = new TextGeometry('858045', {
+        const geometry = new TextGeometry("858045", {
           font: font,
-          size: 0.5,
-          depth: 0.9,
+          size: 0.2,
+          depth: 0.7, // inizia dal centro del cubo
           // curveSegments: 12,
           // bevelEnabled: true,
           // bevelThickness: 10,
@@ -89,8 +89,12 @@ export default {
         });
         const txt_mat = new THREE.MeshPhongMaterial({ color: 0xffffff });
         const txt_mesh = new THREE.Mesh(geometry, txt_mat);
-        txt_mesh.position.x = -0.3;
-        txt_mesh.position.y = 0;
+        const size_mesh = new THREE.Box3().setFromObject(txt_mesh);
+        var size = new THREE.Vector3();
+        var size_number_block = size_mesh.getSize(size);
+
+        txt_mesh.position.x = -(size_number_block.x / 2);
+        txt_mesh.position.y = -(size_number_block.y / 2);
         cube.add(txt_mesh);
       });
       group.add(cube);
@@ -140,7 +144,6 @@ export default {
 #container_blockchain {
   height: calc(100vh - 90px);
   width: 100%;
-  // background-color: rgb(107, 93, 93);
 }
 #block {
   height: 100%;
