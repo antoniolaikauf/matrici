@@ -1,14 +1,17 @@
 <script>
-import Block from "./Block.vue";
+import { defineAsyncComponent } from "vue";
+// import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
 // non fanno più parte della libreria bisogna importarli manualemnte
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+const define_call = defineAsyncComponent(() => import("./Block.vue"));
+
 export default {
   name: "Blockchain",
   components: {
-    Block,
+    // Block,
   },
   data() {
     return {
