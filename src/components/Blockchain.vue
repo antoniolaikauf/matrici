@@ -2,6 +2,9 @@
 import Block from "./Block.vue";
 import axios from "axios";
 import * as THREE from "three";
+// non fanno più parte della libreria bisogna importarli manualemnte 
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import {TextGeometry} from 'three/addons/geometries/TextGeometry.js'
 export default {
   name: "Blockchain",
   components: {
@@ -39,19 +42,19 @@ export default {
     },
   },
   mounted() {
-    // * componenti importanti 
+    // * componenti importanti
     this.call();
     const space = document.getElementById("container_blockchain");
 
     const scene = new THREE.Scene(); // * contenitore per oggetti 3d
     const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // * punto di vista
-    // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered. 
-    
+    // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered.
+
     const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
     directionalLight.position.set(1, 1, 10); // Posizionamento della luce asse x y z più è alto lo z e più sembrera che venga dalla telecamera
     scene.add(directionalLight);
-    
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // * generatore immagini 
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // * generatore immagini
     renderer.setSize(space.clientWidth, space.clientHeight); // spazio immagini
     space.appendChild(renderer.domElement);
 
@@ -63,13 +66,33 @@ export default {
       let material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0x8a8a8a),
         metalness: 1, //  metallicità
-        roughness: 0.3,  //  ruvidità
+        roughness: 0.3, //  ruvidità
         emissive: new THREE.Color(0, 0, 0),
       });
 
-      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale 
+      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
       cube.position.set(0, distance, 0);
       distance += 2;
+
+      const loader = new FontLoader();
+      loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
+        const geometry = new TextGeometry('858045', {
+          font: font,
+          size: 0.5,
+          depth: 0.9,
+          // curveSegments: 12,
+          // bevelEnabled: true,
+          // bevelThickness: 10,
+          // bevelSize: 8,
+          // bevelOffset: 0,
+          // bevelSegments: 5,
+        });
+        const txt_mat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+        const txt_mesh = new THREE.Mesh(geometry, txt_mat);
+        txt_mesh.position.x = -0.3;
+        txt_mesh.position.y = 0;
+        cube.add(txt_mesh);
+      });
       group.add(cube);
     }
 
@@ -77,7 +100,8 @@ export default {
     camera.position.z = 6;
     camera.position.y = 5;
 
-    const animation = () => { // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
+    const animation = () => {
+      // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
       requestAnimationFrame(animation);
       group.children.forEach((block, i) => {
         block.rotation.y += 0.01; // rotation or position
