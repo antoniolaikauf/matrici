@@ -63,7 +63,9 @@ export default {
     space.appendChild(renderer.domElement);
 
     let distance = 0;
-    const numbblock = 5;
+    const numbblock = 10;
+    let flag = true;
+    let half_cubes = Math.floor(numbblock / 2);
     for (let i = 0; i < numbblock; i++) {
       const geometry = new THREE.BoxGeometry(1.3, 1.3, 1.3); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
@@ -74,7 +76,10 @@ export default {
       });
 
       const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
-      cube.position.set(2, distance, 0);
+      if (i > half_cubes) flag = false;
+      if (flag) cube.position.set(2, distance, 0);
+      else cube.position.set(-2, distance - half_cubes * 2, 0);
+
       distance += 2;
       // text
       const loader = new FontLoader();
