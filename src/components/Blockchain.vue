@@ -22,7 +22,7 @@ export default {
       try {
         // const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
         const data = await axios("https://blockstream.info/api/blocks/");
-        this.blocks = data.data.reverse();
+        this.blocks = data.data;
         console.log(this.blocks);
       } catch (error) {
         console.log(error.data);
@@ -30,8 +30,9 @@ export default {
     },
     async GetBlock(i) {
       this.show_block = true;
+      console.log("cicici");
+
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
-      // this.blocks = blockHash.data;
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
       this.block_iesimo = dataBlock.data;
 
@@ -60,7 +61,7 @@ export default {
     renderer.setSize(space.clientWidth, space.clientHeight); // spazio immagini
     space.appendChild(renderer.domElement);
 
-    let distance = 0;
+    let distance = 18;
     const numbblock = 10;
     let flag = true;
     let half_cubes = Math.floor(numbblock / 2);
@@ -75,10 +76,10 @@ export default {
 
       const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
       if (i >= half_cubes) flag = false;
-      if (flag) cube.position.set(2, distance, -1);
-      else cube.position.set(-2, distance - half_cubes * 2, -1); // distance - half_cubes * 2 è per diminuire la distanza, se no andrebbe a 12 14 ma riparte da 2 4 ...
+      if (flag) cube.position.set(-2, distance - numbblock, -1);
+      else cube.position.set(2, distance, -1); // distance - half_cubes * 2 è per diminuire la distanza, se no andrebbe a 12 14 ma riparte da 2 4 ...
 
-      distance += 2;
+      distance -= 2;
       // text
       const loader = new FontLoader();
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
@@ -142,7 +143,6 @@ export default {
 
     camera.position.z = 6;
     camera.position.y = 4;
-    console.log(scene.children);
 
     const animation = () => {
       // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
@@ -156,6 +156,7 @@ export default {
     animation();
 
     window.addEventListener("resize", () => {
+      // non si aggiorna
       // responsive
       const width = space.clientWidth;
       const height = space.clientHeight;
@@ -171,13 +172,15 @@ export default {
 <template>
   <main>
     <block v-if="show_block" :value="block_iesimo" @close="blockchain" />
-    <div v-else class="d-flex px-5">
-      <div id="blocks">
-        <div v-for="(block, i) in blocks">
-          <div @click="GetBlock(i)">Numero Blocco: {{ block.height }}</div>
+    <div class="container-fluid" v-else>
+      <div class="row">
+        <div id="blocks" class="col-12 col-md-3">
+          <div v-for="(block, i) in blocks">
+            <div @click="GetBlock(i)">Numero Blocco: {{ block.height }}</div>
+          </div>
         </div>
+        <div id="container_blockchain" class="col-12 col-md-9"></div>
       </div>
-      <main id="container_blockchain"></main>
     </div>
   </main>
 </template>
@@ -185,11 +188,8 @@ export default {
 <style lang="scss">
 @use "./../style/general.scss" as *;
 #container_blockchain {
-  height: calc(100vh - 90px);
-  width: 100%;
-  width: 70%;
-}
-#blocks {
-  width: 30%;
+  height: calc(100vh - 90px); // 90px header
+  position: relative;
+  overflow: hidden;
 }
 </style>
