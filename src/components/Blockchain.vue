@@ -14,6 +14,7 @@ export default {
     return {
       blocks: [],
       show_block: false,
+      block_iesimo: "",
     };
   },
   methods: {
@@ -32,6 +33,7 @@ export default {
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
       // this.blocks = blockHash.data;
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
+      this.block_iesimo = dataBlock.data;
 
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
       // bits è la forma compatta del target
@@ -50,7 +52,7 @@ export default {
     const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // * punto di vista
     // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered.
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
     directionalLight.position.set(1, 1, 10); // Posizionamento della luce asse x y z più è alto lo z e più sembrera che venga dalla telecamera
     scene.add(directionalLight);
 
@@ -63,7 +65,7 @@ export default {
     let flag = true;
     let half_cubes = Math.floor(numbblock / 2);
     for (let i = 0; i < this.blocks.length; i++) {
-      const geometry = new THREE.BoxGeometry(1.3, 1.3, 1.3); // dimensioni block
+      const geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0x8a8a8a),
         metalness: 1, //  metallicità
@@ -72,9 +74,9 @@ export default {
       });
 
       const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
-      if (i > half_cubes) flag = false;
-      if (flag) cube.position.set(2, distance, 0);
-      else cube.position.set(-2, distance - half_cubes * 2, 0); // distance - half_cubes * 2 è per diminuire la distanza, se no andrebbe a 12 14 ma riparte da 2 4 ...
+      if (i >= half_cubes) flag = false;
+      if (flag) cube.position.set(2, distance, -1);
+      else cube.position.set(-2, distance - half_cubes * 2, -1); // distance - half_cubes * 2 è per diminuire la distanza, se no andrebbe a 12 14 ma riparte da 2 4 ...
 
       distance += 2;
       // text
@@ -120,26 +122,26 @@ export default {
         var size_string_block = size_mesh_tring.getSize(string_size);
 
         // cordinate testo su cubo
-        meshs[0].NUMB_MESH.position.set(-(size_number_block.x / 2), -size_number_block.y / 2, 0); // Faccia frontale
-        meshs[0].STRING_MESH.position.set(-0.4, -size_number_block.y / 2 + 0.3, 0);
+        meshs[0].NUMB_MESH.position.set(-(size_number_block.x / 2), -size_number_block.y / 2, 0.05); // Faccia frontale
+        meshs[0].STRING_MESH.position.set(-0.4, -size_number_block.y / 2 + 0.3, 0.05);
 
-        meshs[1].NUMB_MESH.position.set(size_number_block.x / 2, -size_number_block.y / 2, -0); // Faccia posteriore
-        meshs[1].STRING_MESH.position.set(0.4, -size_number_block.y / 2 + 0.3, 0);
+        meshs[1].NUMB_MESH.position.set(size_number_block.x / 2, -size_number_block.y / 2, -0.05); // Faccia posteriore
+        meshs[1].STRING_MESH.position.set(0.4, -size_number_block.y / 2 + 0.3, -0.05);
         meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
 
-        meshs[2].NUMB_MESH.position.set(0, -size_number_block.y / 2, size_number_block.x / 2); // Faccia destra
-        meshs[2].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, size_string_block.x / 2);
+        meshs[2].NUMB_MESH.position.set(0.05, -size_number_block.y / 2, size_number_block.x / 2); // Faccia destra
+        meshs[2].STRING_MESH.position.set(0.05, -size_number_block.y / 2 + 0.3, size_string_block.x / 2);
         meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
 
-        meshs[3].NUMB_MESH.position.set(0, -size_number_block.y / 2, -size_number_block.x / 2); // Faccia sinistra
-        meshs[3].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
+        meshs[3].NUMB_MESH.position.set(-0.05, -size_number_block.y / 2, -size_number_block.x / 2); // Faccia sinistra
+        meshs[3].STRING_MESH.position.set(-0.05, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
         meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
       });
       scene.add(cube);
     }
 
     camera.position.z = 6;
-    camera.position.y = 5;
+    camera.position.y = 4;
     console.log(scene.children);
 
     const animation = () => {
@@ -167,11 +169,17 @@ export default {
 </script>
 
 <template>
-  <block v-if="show_block" :value="blocks" @close="blockchain" />
-  <main id="container_blockchain"></main>
-  <div v-for="(block, i) in 10" v-if="!show_block">
-    <div @click="GetBlock(i)">{{ i }} CICICICICICIICICICICI</div>
-  </div>
+  <main>
+    <block v-if="show_block" :value="block_iesimo" @close="blockchain" />
+    <div v-else class="d-flex px-5">
+      <div id="blocks">
+        <div v-for="(block, i) in blocks">
+          <div @click="GetBlock(i)">Numero Blocco: {{ block.height }}</div>
+        </div>
+      </div>
+      <main id="container_blockchain"></main>
+    </div>
+  </main>
 </template>
 
 <style lang="scss">
@@ -179,10 +187,9 @@ export default {
 #container_blockchain {
   height: calc(100vh - 90px);
   width: 100%;
+  width: 70%;
 }
-#block {
-  height: 100%;
-  width: 100%;
-  display: block;
+#blocks {
+  width: 30%;
 }
 </style>
