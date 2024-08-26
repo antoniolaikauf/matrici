@@ -64,7 +64,6 @@ export default {
 
     let distance = 0;
     const numbblock = 5;
-    const group = new THREE.Group();
     for (let i = 0; i < numbblock; i++) {
       const geometry = new THREE.BoxGeometry(1.3, 1.3, 1.3); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
@@ -75,7 +74,7 @@ export default {
       });
 
       const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
-      cube.position.set(0, distance, 0);
+      cube.position.set(2, distance, 0);
       distance += 2;
       // text
       const loader = new FontLoader();
@@ -136,19 +135,22 @@ export default {
         meshs[3].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
         meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
       });
-      group.add(cube);
+      scene.add(cube);
     }
 
-    scene.add(group);
     camera.position.z = 6;
     camera.position.y = 5;
+    console.log(scene.children);
 
     const animation = () => {
       // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
       requestAnimationFrame(animation);
-      group.children.forEach((block, i) => {
+      scene.children.forEach((block, i) => {
         block.rotation.y += 0.01; // rotation or position
       });
+
+      // scene.rotation.y += 0.01;
+      renderer.render(scene, camera);
       renderer.render(scene, camera);
     };
     animation();
