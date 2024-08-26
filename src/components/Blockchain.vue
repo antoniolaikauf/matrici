@@ -20,8 +20,10 @@ export default {
     async call() {
       try {
         const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
+        const datalist = await axios("https://blockstream.info/api/blocks/");
         // this.blocks = data.data;
-        console.log(data);
+        console.log(data.data);
+        console.log(datalist.data);
       } catch (error) {
         console.log(error.data);
       }
@@ -29,7 +31,9 @@ export default {
     async GetBlock(i) {
       this.show_block = true;
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
-      this.blocks = blockHash.data;
+      // this.blocks = blockHash.data;
+      console.log(this.blocks);
+
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
 
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
@@ -78,7 +82,9 @@ export default {
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
         // TESTO
-        const numb_geometry = new TextGeometry("858045", {
+        var ciao = 0;
+
+        const numb_geometry = new TextGeometry(ciao.toString(), {
           font: font,
           size: 0.15,
           depth: 0.7, // inizia dal centro del cubo
@@ -122,11 +128,11 @@ export default {
         meshs[1].STRING_MESH.position.set(0.4, -size_number_block.y / 2 + 0.3, 0);
         meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
 
-        meshs[2].NUMB_MESH.position.set(0, -size_number_block.y / 2, 0.3); // Faccia destra
+        meshs[2].NUMB_MESH.position.set(0, -size_number_block.y / 2, size_number_block.x / 2); // Faccia destra
         meshs[2].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, size_string_block.x / 2);
         meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
 
-        meshs[3].NUMB_MESH.position.set(0, -size_number_block.y / 2, -0.3); // Faccia sinistra
+        meshs[3].NUMB_MESH.position.set(0, -size_number_block.y / 2, -size_number_block.x / 2); // Faccia sinistra
         meshs[3].STRING_MESH.position.set(0, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
         meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
       });
