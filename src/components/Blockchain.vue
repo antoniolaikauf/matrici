@@ -78,7 +78,7 @@ export default {
       const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
       if (i > half_cubes) flag = false;
       if (flag) cube.position.set(2, distance, 0);
-      else cube.position.set(-2, distance - half_cubes * 2, 0);
+      else cube.position.set(-2, distance - half_cubes * 2, 0); // distance - half_cubes * 2 è per diminuire la distanza, se no andrebbe a 12 14 ma riparte da 2 4 ...
 
       distance += 2;
       // text
@@ -153,8 +153,6 @@ export default {
       scene.children.forEach((block, i) => {
         block.rotation.y += 0.01; // rotation or position
       });
-
-      // scene.rotation.y += 0.01;
       renderer.render(scene, camera);
       renderer.render(scene, camera);
     };
