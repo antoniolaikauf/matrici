@@ -12,18 +12,17 @@ export default {
   },
   data() {
     return {
-      blocks: "",
+      blocks: [],
       show_block: false,
     };
   },
   methods: {
     async call() {
       try {
-        const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
-        const datalist = await axios("https://blockstream.info/api/blocks/");
-        // this.blocks = data.data;
-        console.log(data.data);
-        console.log(datalist.data);
+        // const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
+        const data = await axios("https://blockstream.info/api/blocks/");
+        this.blocks = data.data.reverse();
+        console.log(this.blocks);
       } catch (error) {
         console.log(error.data);
       }
@@ -32,8 +31,6 @@ export default {
       this.show_block = true;
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
       // this.blocks = blockHash.data;
-      console.log(this.blocks);
-
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
 
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
@@ -45,9 +42,8 @@ export default {
       this.show_block = false;
     },
   },
-  mounted() {
-    // * componenti importanti
-    this.call();
+  async mounted() {
+    await this.call();
     const space = document.getElementById("container_blockchain");
 
     const scene = new THREE.Scene(); // * contenitore per oggetti 3d
@@ -66,7 +62,7 @@ export default {
     const numbblock = 10;
     let flag = true;
     let half_cubes = Math.floor(numbblock / 2);
-    for (let i = 0; i < numbblock; i++) {
+    for (let i = 0; i < this.blocks.length; i++) {
       const geometry = new THREE.BoxGeometry(1.3, 1.3, 1.3); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(0x8a8a8a),
@@ -86,9 +82,8 @@ export default {
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
         // TESTO
-        var ciao = 0;
 
-        const numb_geometry = new TextGeometry(ciao.toString(), {
+        const numb_geometry = new TextGeometry(this.blocks[i].height.toString(), {
           font: font,
           size: 0.15,
           depth: 0.7, // inizia dal centro del cubo
@@ -150,7 +145,7 @@ export default {
     const animation = () => {
       // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
       requestAnimationFrame(animation);
-      scene.children.forEach((block, i) => {
+      scene.children.forEach((block, y) => {
         block.rotation.y += 0.01; // rotation or position
       });
       renderer.render(scene, camera);
