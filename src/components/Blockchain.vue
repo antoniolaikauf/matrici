@@ -171,8 +171,8 @@ export default {
 
 <template>
   <main>
-    <block v-if="show_block" :value="block_iesimo" @close="blockchain" />
-    <div class="container-fluid" v-else>
+    <block v-show="show_block" :value="block_iesimo" @close="blockchain" />
+    <div class="container-fluid" v-show="!show_block">
       <div class="row">
         <div id="blocks" class="col-12 col-md-3 text-center">
           <div v-for="(block, i) in blocks">

@@ -21,7 +21,7 @@ export default {
     <div>Weight: {{ value.weight }}</div>
     <div>Merkle root: {{ value.merkle_root }}</div>
     <div>Previous block hash: {{ value.previousblockhash }}</div>
-    <button @click="$emit('close')">chiudi</button>
+    <button type="button" class="btn btn-outline-light" @click="$emit('close')">Close</button>
   </div>
 </template>
 
@@ -30,7 +30,7 @@ export default {
 #block {
   width: 80%;
   margin: auto;
-  div{
+  div {
     padding: 10px 0;
   }
 }
