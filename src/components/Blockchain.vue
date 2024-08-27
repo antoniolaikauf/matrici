@@ -88,12 +88,13 @@ export default {
         roughness: 0.3, //  ruvidità
         emissive: new THREE.Color(0, 0, 0),
       });
+      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
       for (let i = 0; i < this.blocks.length; i++) {
-        const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
         if (i >= half_cubes) flag = false;
         if (flag) cube.position.set(-2, distance - numbblock, -1);
         else cube.position.set(2, distance, -1);
         distance -= 2;
+        scene.add(cube.clone());
         // text
         const loader = new FontLoader();
         loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
@@ -104,7 +105,6 @@ export default {
             font: font,
             size: 0.15,
             depth: 0.7, // inizia dal centro del cubo
-            align: "center",
           });
           const string_geometry = new TextGeometry("Number Block", {
             font: font,
@@ -112,11 +112,11 @@ export default {
             depth: 0.7, // inizia dal centro del cubo
           });
           const meshs = [];
-          for (let i = 0; i < 4; i++) {
+          for (let j = 0; j < 4; j++) {
             const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
             const string_mesh = new THREE.Mesh(string_geometry, numb_mat);
             meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
-            cube.add(numb_mesh, string_mesh);
+            scene.children[i + 1].add(numb_mesh, string_mesh);
           }
 
           const size_mesh = new THREE.Box3().setFromObject(meshs[0].NUMB_MESH); // dimensioni
@@ -143,7 +143,6 @@ export default {
           meshs[3].STRING_MESH.position.set(-0.05, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
           meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
         });
-        scene.add(cube);
       }
 
       camera.position.z = 6;
