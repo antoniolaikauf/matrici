@@ -119,35 +119,33 @@ export default {
             scene.children[i + 1].add(numb_mesh, string_mesh);
           }
 
-          // size(meshs[0])
-
-          const size_mesh = new THREE.Box3().setFromObject(meshs[0].NUMB_MESH); // dimensioni
-          var numb_size = new THREE.Vector3();
-          var size_number_block = size_mesh.getSize(numb_size);
-
-          const size_mesh_tring = new THREE.Box3().setFromObject(meshs[0].STRING_MESH); // dimensioni
-          var string_size = new THREE.Vector3();
-          var size_string_block = size_mesh_tring.getSize(string_size);
+          const size_number = size(meshs[0].NUMB_MESH);
+          const size_string = size(meshs[0].STRING_MESH);
 
           // cordinate testo su cubo
-          meshs[0].NUMB_MESH.position.set(-(size_number_block.x / 2), -size_number_block.y / 2, 0.05); // Faccia frontale
-          meshs[0].STRING_MESH.position.set(-0.4, -size_number_block.y / 2 + 0.3, 0.05);
+          meshs[0].NUMB_MESH.position.set(-(size_number.x / 2), -size_number.y / 2, 0.05); // Faccia frontale
+          meshs[0].STRING_MESH.position.set(-0.4, -size_number.y / 2 + 0.3, 0.05);
 
-          meshs[1].NUMB_MESH.position.set(size_number_block.x / 2, -size_number_block.y / 2, -0.05); // Faccia posteriore
-          meshs[1].STRING_MESH.position.set(0.4, -size_number_block.y / 2 + 0.3, -0.05);
+          meshs[1].NUMB_MESH.position.set(size_number.x / 2, -size_number.y / 2, -0.05); // Faccia posteriore
+          meshs[1].STRING_MESH.position.set(0.4, -size_number.y / 2 + 0.3, -0.05);
           meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
 
-          meshs[2].NUMB_MESH.position.set(0.05, -size_number_block.y / 2, size_number_block.x / 2); // Faccia destra
-          meshs[2].STRING_MESH.position.set(0.05, -size_number_block.y / 2 + 0.3, size_string_block.x / 2);
+          meshs[2].NUMB_MESH.position.set(0.05, -size_number.y / 2, size_number.x / 2); // Faccia destra
+          meshs[2].STRING_MESH.position.set(0.05, -size_number.y / 2 + 0.3, size_string.x / 2);
           meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
 
-          meshs[3].NUMB_MESH.position.set(-0.05, -size_number_block.y / 2, -size_number_block.x / 2); // Faccia sinistra
-          meshs[3].STRING_MESH.position.set(-0.05, -size_number_block.y / 2 + 0.3, -size_string_block.x / 2);
+          meshs[3].NUMB_MESH.position.set(-0.05, -size_number.y / 2, -size_number.x / 2); // Faccia sinistra
+          meshs[3].STRING_MESH.position.set(-0.05, -size_number.y / 2 + 0.3, -size_string.x / 2);
           meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
         });
       }
 
-      // function size(ob) {}
+      function size(ob) {
+        const size_mesh = new THREE.Box3().setFromObject(ob);
+        const mesh_size = new THREE.Vector3();
+        const size_block = size_mesh.getSize(mesh_size);
+        return size_block;
+      }
 
       camera.position.z = 6;
       camera.position.y = 4;
