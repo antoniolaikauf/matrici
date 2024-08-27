@@ -71,8 +71,8 @@ export default {
       const numbblock = 10;
       let flag = true;
       let half_cubes = Math.floor(numbblock / 2);
-      const geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4); // dimensioni block
 
+      const geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4); // dimensioni block
       let material = new THREE.MeshStandardMaterial({
         // materiale blocco
         color: new THREE.Color(0x8a8a8a),
@@ -80,6 +80,7 @@ export default {
         roughness: 0.3, //  ruvidità
         emissive: new THREE.Color(0, 0, 0),
       });
+      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
 
       const numb_mat = new THREE.MeshStandardMaterial({
         // materiale testo
@@ -88,7 +89,6 @@ export default {
         roughness: 0.3, //  ruvidità
         emissive: new THREE.Color(0, 0, 0),
       });
-      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
       for (let i = 0; i < this.blocks.length; i++) {
         if (i >= half_cubes) flag = false;
         if (flag) cube.position.set(-2, distance - numbblock, -1);
@@ -119,6 +119,8 @@ export default {
             scene.children[i + 1].add(numb_mesh, string_mesh);
           }
 
+          // size(meshs[0])
+
           const size_mesh = new THREE.Box3().setFromObject(meshs[0].NUMB_MESH); // dimensioni
           var numb_size = new THREE.Vector3();
           var size_number_block = size_mesh.getSize(numb_size);
@@ -145,15 +147,20 @@ export default {
         });
       }
 
+      // function size(ob) {}
+
       camera.position.z = 6;
       camera.position.y = 4;
+
+      const animation_speed = 0.01;
 
       const animation = () => {
         // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
         requestAnimationFrame(animation);
         scene.children.forEach((block, y) => {
-          block.rotation.y += 0.01; // rotation or position
+          block.rotation.y += animation_speed; // rotation or position
         });
+
         renderer.render(scene, camera);
         renderer.render(scene, camera);
       };
@@ -166,7 +173,7 @@ export default {
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(window.devicePixelRatio);
       });
       stats.end();
       // requestAnimationFrame(tick);
