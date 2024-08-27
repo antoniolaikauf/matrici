@@ -174,9 +174,9 @@ export default {
     <block v-if="show_block" :value="block_iesimo" @close="blockchain" />
     <div class="container-fluid" v-else>
       <div class="row">
-        <div id="blocks" class="col-12 col-md-3">
+        <div id="blocks" class="col-12 col-md-3 text-center">
           <div v-for="(block, i) in blocks">
-            <div @click="GetBlock(i)">Numero Blocco: {{ block.height }}</div>
+            <div @click="GetBlock(block.height)" class="py-2 blocks">Altezza Blocco: {{ block.height }}</div>
           </div>
         </div>
         <div id="container_blockchain" class="col-12 col-md-9"></div>
@@ -191,5 +191,9 @@ export default {
   height: calc(100vh - 90px); // 90px header
   position: relative;
   overflow: hidden;
+}
+
+.blocks {
+  cursor: pointer;
 }
 </style>

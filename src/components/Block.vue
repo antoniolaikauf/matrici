@@ -14,12 +14,24 @@ export default {
 };
 </script>
 <template>
-  <div>
-    {{ value }}
+  <div id="block">
+    <div>Height: {{ value.height }}</div>
+    <div>Timestamp: {{ value.timestamp }}</div>
+    <div>Size: {{ value.size }}</div>
+    <div>Weight: {{ value.weight }}</div>
+    <div>Merkle root: {{ value.merkle_root }}</div>
+    <div>Previous block hash: {{ value.previousblockhash }}</div>
+    <button @click="$emit('close')">chiudi</button>
   </div>
-  <button @click="$emit('close')">chiudi</button>
 </template>
 
-<style  lang="scss">
+<style scoped lang="scss">
 @use "./../style/general.scss" as *;
+#block {
+  width: 80%;
+  margin: auto;
+  div{
+    padding: 10px 0;
+  }
+}
 </style>
