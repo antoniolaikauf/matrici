@@ -8,17 +8,19 @@ export default {
     },
   },
   data() {
-    return {};
+    return { timestamp: null };
   },
-  mounted() {},
+  mounted() {
+  },
 };
 </script>
 <template>
   <div id="block">
     <div>Height: {{ value.height }}</div>
-    <div>Timestamp: {{ value.timestamp }}</div>
+    <div>Timestamp: {{ new Date(this.value.timestamp * 1000).toLocaleString() }}</div>
     <div>Size: {{ value.size }}</div>
     <div>Weight: {{ value.weight }}</div>
+    <div>Transazioni: {{ value.tx_count }}</div>
     <div>Merkle root: {{ value.merkle_root }}</div>
     <div>Previous block hash: {{ value.previousblockhash }}</div>
     <button type="button" class="btn btn-outline-light" @click="$emit('close')">Close</button>

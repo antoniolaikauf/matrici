@@ -32,11 +32,12 @@ export default {
     },
     async GetBlock(i) {
       this.show_block = true;
-      console.log("cicici");
 
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
       const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
       this.block_iesimo = dataBlock.data;
+      console.log(this.block_iesimo);
+      
 
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
       // bits è la forma compatta del target
