@@ -25,7 +25,6 @@ export default {
         // const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
         const data = await axios("https://blockstream.info/api/blocks/");
         this.blocks = data.data;
-        console.log(this.blocks);
       } catch (error) {
         console.log(error.data);
       }
@@ -34,10 +33,10 @@ export default {
       this.show_block = true;
 
       const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
-      const dataBlock = await axios(`https://blockstream.info/api/block/${blockHash.data}`); // dati blocco
+      const dataBlock = await axios(`https://api.blockcypher.com/v1/btc/main/blocks/${blockHash.data}`);
+
       this.block_iesimo = dataBlock.data;
       console.log(this.block_iesimo);
-      
 
       // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
       // bits è la forma compatta del target
@@ -47,10 +46,12 @@ export default {
     blockchain() {
       this.show_block = false;
     },
+    new_block() {},
   },
   async mounted() {
     const stats = new Stats();
     stats.showPanel(1);
+    this.new_block();
     await this.call();
     const space = document.getElementById("container_blockchain");
     document.body.appendChild(stats.dom);
