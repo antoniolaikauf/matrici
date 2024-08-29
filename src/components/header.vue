@@ -1,13 +1,33 @@
 <script>
+import axios from "axios";
 export default {
   name: "header",
+  data() {
+    return { transection: "" };
+  },
+  methods: {
+    async transection_information() {
+      this.emitter.emit("increment", { msg: this.transection });
+      const info_transection = await axios(`https://api.blockcypher.com/v1/btc/main/txs/${this.transection}`);
+      console.log(info_transection.data);
+    },
+  },
 };
 </script>
 <template>
   <header>
     <nav class="navbar">
-      <div class="container_nav">
-        <img src="../../public/img/logo.png" alt="" />
+      <img src="../../public/img/logo.png" alt="" />
+      <div class="input-group mb-3" id="search">
+        <button @click="transection_information" class="btn btn-outline-secondary" type="button" id="button-addon1">Button</button>
+        <input
+          v-model="transection"
+          type="text"
+          class="form-control"
+          placeholder="transection"
+          aria-label="Example text with button addon"
+          aria-describedby="button-addon1"
+        />
       </div>
     </nav>
   </header>
@@ -18,18 +38,18 @@ export default {
 header {
   height: 90px;
   .navbar {
+    display: flex;
     position: fixed;
     top: 0px;
     width: 100%;
-
-    .container_nav {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 30px;
-      img {
-        width: 50px;
-        height: 50px;
-      }
+    justify-content: space-between;
+    padding: 10px 30px;
+    #search {
+      width: 30%;
+    }
+    img {
+      width: 50px;
+      height: 50px;
     }
   }
 }

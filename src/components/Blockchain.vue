@@ -41,6 +41,10 @@ export default {
     new_block() {},
   },
   async mounted() {
+    this.emitter.on("increment", (data) => {
+      console.log(data.msg);
+    });
+
     const token = "d4a50872e7484dbeb7550a4a00a11839";
     const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
     new_block.onopen = () => {
