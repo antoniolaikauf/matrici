@@ -15,6 +15,7 @@ export default {
     },
   },
   components: {
+    transections_block: defineAsyncComponent(() => import("./BlockTransection.vue")),
     block: defineAsyncComponent(() => import("./Block.vue")), // lazy loader viene caricata solo quando si ha bisogno del componente
   },
   data() {
@@ -22,6 +23,8 @@ export default {
       blocks: [],
       show_block: false,
       block_iesimo: "",
+      T_block: "",
+      T_show: false,
     };
   },
   methods: {
@@ -43,35 +46,35 @@ export default {
     },
     blockchain() {
       this.show_block = false;
+      this.T_show = false;
     },
-    new_block() {},
   },
-  // watch: {console.log(this.block_searched)},
   async mounted() {
     eventBus.on("increment", (data) => {
-      if (data.value === true) (this.show_block = true), (this.block_iesimo = data.info_block);
+      if (data.value === true) (this.T_show = true), (this.T_block = data.info_block);
     });
-    const token = "d4a50872e7484dbeb7550a4a00a11839";
-    const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
-    new_block.onopen = () => {
-      console.log("Connected to BlockCypher WebSocket server.");
-      new_block.send(
-        JSON.stringify({
-          event: "new-block", // Subscribe to block events
-        })
-      );
-    };
-    new_block.onmessage = (event) => {
-      // var tx = JSON.parse(event.data);
-      console.log(event);
-    };
 
-    new_block.onclose = () => {
-      console.log("chiusa");
-    };
+    // const token = "d4a50872e7484dbeb7550a4a00a11839";
+    // const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
+    // new_block.onopen = () => {
+    //   console.log("Connected to BlockCypher WebSocket server.");
+    //   new_block.send(
+    //     JSON.stringify({
+    //       event: "new-block", // Subscribe to block events
+    //     })
+    //   );
+    // };
+    // new_block.onmessage = (event) => {
+    //   // var tx = JSON.parse(event.data);
+    //   console.log(event);
+    // };
+
+    // new_block.onclose = () => {
+    //   console.log("chiusa");
+    // };
+
     // const stats = new Stats();
     // stats.showPanel(1);
-    this.new_block();
     await this.call();
     // await this.call();
     const space = document.getElementById("container_blockchain");
@@ -201,13 +204,17 @@ export default {
     // };
     // requestAnimationFrame(tick);
   },
+  beforeUnmount() {
+    eventBus.off("increment");
+  },
 };
 </script>
 
 <template>
   <main>
+    <transections_block v-if="T_show" :value_transection="T_block" @close="blockchain" />
     <block v-show="show_block" :value="block_iesimo" @close="blockchain" />
-    <div class="container-fluid" v-show="!show_block">
+    <div class="container-fluid" v-show="!show_block && !T_show">
       <div class="row">
         <div id="blocks" class="col-12 col-md-3 text-center">
           <div v-for="(block, i) in blocks">
