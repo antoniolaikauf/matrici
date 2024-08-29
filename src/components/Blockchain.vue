@@ -9,11 +9,6 @@ import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 export default {
   name: "Blockchain",
-  props: {
-    block_searched: {
-      type: Object,
-    },
-  },
   components: {
     transections_block: defineAsyncComponent(() => import("./BlockTransection.vue")),
     block: defineAsyncComponent(() => import("./Block.vue")), // lazy loader viene caricata solo quando si ha bisogno del componente
