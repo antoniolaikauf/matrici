@@ -30,17 +30,10 @@ export default {
     },
     async GetBlock(i) {
       this.show_block = true;
-
-      const blockHash = await axios(`https://blockstream.info/api/block-height/${i}`);
-      const dataBlock = await axios(`https://api.blockcypher.com/v1/btc/main/blocks/${blockHash.data}`);
+      const dataBlock = await axios(`https://api.blockcypher.com/v1/btc/main/blocks/${i}?txstart=1&limit=10`);
 
       this.block_iesimo = dataBlock.data;
       console.log(this.block_iesimo);
-
-      // difficolta è quanto è difficile minare un blocco, un aumento del target diminuisce la difficolta, una diminuzione del target aumenta la difficolta
-      // bits è la forma compatta del target
-      // size dimensione del blocco in bytes
-      // transection count quantita di transazioni
     },
     blockchain() {
       this.show_block = false;
@@ -48,6 +41,19 @@ export default {
     new_block() {},
   },
   async mounted() {
+    const token = "d4a50872e7484dbeb7550a4a00a11839";
+    const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
+    new_block.onopen = () => {
+      console.log("connesione aperta");
+    };
+    new_block.onmessage = (event) => {
+      var tx = JSON.parse(event.data);
+      console.log(tx);
+    };
+
+    new_block.onclose = () => {
+      console.log("chiusa");
+    };
     // const stats = new Stats();
     // stats.showPanel(1);
     this.new_block();
@@ -96,7 +102,7 @@ export default {
       if (flag) cube.position.set(-2, distance - numbblock, -1);
       else cube.position.set(2, distance, -1);
       distance -= 2;
-      scene.add(cube.clone());
+      scene.add(cube.clone()); // add block to scena
       // text
       const loader = new FontLoader();
       loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
@@ -179,11 +185,6 @@ export default {
     // requestAnimationFrame(tick);
     // };
     // requestAnimationFrame(tick);
-    //   stats.end();
-    //   // requestAnimationFrame(tick);
-    // };
-    // // requestAnimationFrame(tick);
-    // tick();
   },
 };
 </script>
