@@ -1,5 +1,6 @@
 <script>
-import Stats from "stats.js";
+import eventBus from "./eventBus";
+// import Stats from "stats.js";
 import { defineAsyncComponent } from "vue";
 import axios from "axios";
 import * as THREE from "three";
@@ -8,6 +9,11 @@ import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 export default {
   name: "Blockchain",
+  props: {
+    block_searched: {
+      type: Object,
+    },
+  },
   components: {
     block: defineAsyncComponent(() => import("./Block.vue")), // lazy loader viene caricata solo quando si ha bisogno del componente
   },
@@ -40,11 +46,11 @@ export default {
     },
     new_block() {},
   },
+  // watch: {console.log(this.block_searched)},
   async mounted() {
-    this.emitter.on("increment", (data) => {
-      console.log(data.msg);
+    eventBus.on("increment", (data) => {
+      if (data.value === true) (this.show_block = true), (this.block_iesimo = data.info_block);
     });
-
     const token = "d4a50872e7484dbeb7550a4a00a11839";
     const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
     new_block.onopen = () => {

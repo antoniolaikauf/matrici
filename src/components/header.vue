@@ -1,4 +1,5 @@
 <script>
+import eventBus from "./eventBus";
 import axios from "axios";
 export default {
   name: "header",
@@ -7,8 +8,8 @@ export default {
   },
   methods: {
     async transection_information() {
-      this.emitter.emit("increment", { msg: this.transection });
       const info_transection = await axios(`https://api.blockcypher.com/v1/btc/main/txs/${this.transection}`);
+      eventBus.emit("increment", { msg: this.transection, info_block: info_transection, value: true });
       console.log(info_transection.data);
     },
   },
