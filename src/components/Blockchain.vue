@@ -48,136 +48,136 @@ export default {
     },
   },
   async mounted() {
-    const stats = new Stats();
-    stats.showPanel(1);
-    await this.call();
+    // const stats = new Stats();
+    // stats.showPanel(1);
+    // await this.call();
     const space = document.getElementById("container_blockchain");
-    document.body.appendChild(stats.dom);
-    const tick = () => {
-      stats.begin();
-      const scene = new THREE.Scene(); // * contenitore per oggetti 3d
-      const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // * punto di vista
-      // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered.
+    // document.body.appendChild(stats.dom);
+    // const tick = () => {
+    //   stats.begin();
+    const scene = new THREE.Scene(); // * contenitore per oggetti 3d
+    const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // * punto di vista
+    // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered.
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
-      directionalLight.position.set(1, 1, 10); // Posizionamento della luce asse x y z più è alto lo z e più sembrera che venga dalla telecamera
-      scene.add(directionalLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+    directionalLight.position.set(1, 1, 10); // Posizionamento della luce asse x y z più è alto lo z e più sembrera che venga dalla telecamera
+    scene.add(directionalLight);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // * generatore immagini
-      renderer.setSize(space.clientWidth, space.clientHeight); // spazio immagini
-      space.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // * generatore immagini
+    renderer.setSize(space.clientWidth, space.clientHeight); // spazio immagini
+    space.appendChild(renderer.domElement);
 
-      let distance = 18;
-      const numbblock = 10;
-      let flag = true;
-      let half_cubes = Math.floor(numbblock / 2);
+    let distance = 18;
+    const numbblock = 10;
+    let flag = true;
+    let half_cubes = Math.floor(numbblock / 2);
 
-      const geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4); // dimensioni block
-      let material = new THREE.MeshStandardMaterial({
-        // materiale blocco
-        color: new THREE.Color(0x8a8a8a),
-        metalness: 1, //  metallicità
-        roughness: 0.3, //  ruvidità
-        emissive: new THREE.Color(0, 0, 0),
-      });
-      const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
+    const geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4); // dimensioni block
+    let material = new THREE.MeshStandardMaterial({
+      // materiale blocco
+      color: new THREE.Color(0x8a8a8a),
+      metalness: 1, //  metallicità
+      roughness: 0.3, //  ruvidità
+      emissive: new THREE.Color(0, 0, 0),
+    });
+    const cube = new THREE.Mesh(geometry, material); // prende una geometria e l'applica al materiale
 
-      const numb_mat = new THREE.MeshStandardMaterial({
-        // materiale testo
-        color: new THREE.Color(0xff0000),
-        metalness: 1, //  metallicità
-        roughness: 0.3, //  ruvidità
-        emissive: new THREE.Color(0, 0, 0),
-      });
-      for (let i = 0; i < this.blocks.length; i++) {
-        if (i >= half_cubes) flag = false;
-        if (flag) cube.position.set(-2, distance - numbblock, -1);
-        else cube.position.set(2, distance, -1);
-        distance -= 2;
-        scene.add(cube.clone());
-        // text
-        const loader = new FontLoader();
-        loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
-          // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
-          // TESTO
+    const numb_mat = new THREE.MeshStandardMaterial({
+      // materiale testo
+      color: new THREE.Color(0xff0000),
+      metalness: 1, //  metallicità
+      roughness: 0.3, //  ruvidità
+      emissive: new THREE.Color(0, 0, 0),
+    });
+    for (let i = 0; i < this.blocks.length; i++) {
+      if (i >= half_cubes) flag = false;
+      if (flag) cube.position.set(-2, distance - numbblock, -1);
+      else cube.position.set(2, distance, -1);
+      distance -= 2;
+      scene.add(cube.clone());
+      // text
+      const loader = new FontLoader();
+      loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
+        // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
+        // TESTO
 
-          const numb_geometry = new TextGeometry(this.blocks[i].height.toString(), {
-            font: font,
-            size: 0.15,
-            depth: 0.7, // inizia dal centro del cubo
-          });
-          const string_geometry = new TextGeometry("Number Block", {
-            font: font,
-            size: 0.1,
-            depth: 0.7, // inizia dal centro del cubo
-          });
-          const meshs = [];
-          for (let j = 0; j < 4; j++) {
-            const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
-            const string_mesh = new THREE.Mesh(string_geometry, numb_mat);
-            meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
-            scene.children[i + 1].add(numb_mesh, string_mesh);
-          }
-
-          const size_number = size(meshs[0].NUMB_MESH);
-          const size_string = size(meshs[0].STRING_MESH);
-
-          // cordinate testo su cubo
-          meshs[0].NUMB_MESH.position.set(-(size_number.x / 2), -size_number.y / 2, 0.05); // Faccia frontale
-          meshs[0].STRING_MESH.position.set(-0.4, -size_number.y / 2 + 0.3, 0.05);
-
-          meshs[1].NUMB_MESH.position.set(size_number.x / 2, -size_number.y / 2, -0.05); // Faccia posteriore
-          meshs[1].STRING_MESH.position.set(0.4, -size_number.y / 2 + 0.3, -0.05);
-          meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
-
-          meshs[2].NUMB_MESH.position.set(0.05, -size_number.y / 2, size_number.x / 2); // Faccia destra
-          meshs[2].STRING_MESH.position.set(0.05, -size_number.y / 2 + 0.3, size_string.x / 2);
-          meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
-
-          meshs[3].NUMB_MESH.position.set(-0.05, -size_number.y / 2, -size_number.x / 2); // Faccia sinistra
-          meshs[3].STRING_MESH.position.set(-0.05, -size_number.y / 2 + 0.3, -size_string.x / 2);
-          meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
+        const numb_geometry = new TextGeometry(this.blocks[i].height.toString(), {
+          font: font,
+          size: 0.15,
+          depth: 0.7, // inizia dal centro del cubo
         });
-      }
-
-      function size(ob) {
-        const size_mesh = new THREE.Box3().setFromObject(ob);
-        const mesh_size = new THREE.Vector3();
-        const size_block = size_mesh.getSize(mesh_size);
-        return size_block;
-      }
-
-      camera.position.z = 6;
-      camera.position.y = 4;
-
-      const animation_speed = 0.01;
-
-      const animation = () => {
-        // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
-        requestAnimationFrame(animation);
-        scene.children.forEach((block, y) => {
-          block.rotation.y += animation_speed; // rotation or position
+        const string_geometry = new TextGeometry("Number Block", {
+          font: font,
+          size: 0.1,
+          depth: 0.7, // inizia dal centro del cubo
         });
+        const meshs = [];
+        for (let j = 0; j < 4; j++) {
+          const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
+          const string_mesh = new THREE.Mesh(string_geometry, numb_mat);
+          meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
+          scene.children[i + 1].add(numb_mesh, string_mesh);
+        }
 
-        renderer.render(scene, camera);
-        renderer.render(scene, camera);
-      };
-      animation();
+        const size_number = size(meshs[0].NUMB_MESH);
+        const size_string = size(meshs[0].STRING_MESH);
 
-      window.addEventListener("resize", () => {
-        // responsive
-        const width = space.clientWidth;
-        const height = space.clientHeight;
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        // cordinate testo su cubo
+        meshs[0].NUMB_MESH.position.set(-(size_number.x / 2), -size_number.y / 2, 0.05); // Faccia frontale
+        meshs[0].STRING_MESH.position.set(-0.4, -size_number.y / 2 + 0.3, 0.05);
+
+        meshs[1].NUMB_MESH.position.set(size_number.x / 2, -size_number.y / 2, -0.05); // Faccia posteriore
+        meshs[1].STRING_MESH.position.set(0.4, -size_number.y / 2 + 0.3, -0.05);
+        meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
+
+        meshs[2].NUMB_MESH.position.set(0.05, -size_number.y / 2, size_number.x / 2); // Faccia destra
+        meshs[2].STRING_MESH.position.set(0.05, -size_number.y / 2 + 0.3, size_string.x / 2);
+        meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
+
+        meshs[3].NUMB_MESH.position.set(-0.05, -size_number.y / 2, -size_number.x / 2); // Faccia sinistra
+        meshs[3].STRING_MESH.position.set(-0.05, -size_number.y / 2 + 0.3, -size_string.x / 2);
+        meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
       });
-      stats.end();
-      // requestAnimationFrame(tick);
+    }
+
+    function size(ob) {
+      const size_mesh = new THREE.Box3().setFromObject(ob);
+      const mesh_size = new THREE.Vector3();
+      const size_block = size_mesh.getSize(mesh_size);
+      return size_block;
+    }
+
+    camera.position.z = 6;
+    camera.position.y = 4;
+
+    const animation_speed = 0.01;
+
+    const animation = () => {
+      // è il render delle immagini.  This will create a loop that causes the renderer to draw the scene every time the screen is refreshed (on a typical screen this means 60 times per second).
+      requestAnimationFrame(animation);
+      scene.children.forEach((block, y) => {
+        block.rotation.y += animation_speed; // rotation or position
+      });
+
+      renderer.render(scene, camera);
+      renderer.render(scene, camera);
     };
-    // requestAnimationFrame(tick);
-    tick();
+    animation();
+
+    window.addEventListener("resize", () => {
+      // responsive
+      const width = space.clientWidth;
+      const height = space.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(window.devicePixelRatio);
+    });
+    //   stats.end();
+    //   // requestAnimationFrame(tick);
+    // };
+    // // requestAnimationFrame(tick);
+    // tick();
   },
 };
 </script>
