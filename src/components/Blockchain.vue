@@ -52,6 +52,7 @@ export default {
     // stats.showPanel(1);
     this.new_block();
     await this.call();
+    // await this.call();
     const space = document.getElementById("container_blockchain");
     // document.body.appendChild(stats.dom);
     // const tick = () => {
@@ -178,6 +179,10 @@ export default {
     // requestAnimationFrame(tick);
     // };
     // requestAnimationFrame(tick);
+    //   stats.end();
+    //   // requestAnimationFrame(tick);
+    // };
+    // // requestAnimationFrame(tick);
     // tick();
   },
 };
