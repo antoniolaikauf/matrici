@@ -46,38 +46,35 @@ export default {
   },
   async mounted() {
     eventBus.on("increment", (data) => {
-      console.log(data.info_block);
-
       if (data.value === true) (this.T_show = true), (this.T_block = data.info_block);
     });
 
-    // const token = "d4a50872e7484dbeb7550a4a00a11839";
-    // const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
-    // new_block.onopen = () => {
-    //   console.log("Connected to BlockCypher WebSocket server.");
-    //   new_block.send(
-    //     JSON.stringify({
-    //       event: "new-block", // Subscribe to block events
-    //     })
-    //   );
-    // };
-    // new_block.onmessage = (event) => {
-    //   // var tx = JSON.parse(event.data);
-    //   console.log(event);
-    // };
+    const token = "d4a50872e7484dbeb7550a4a00a11839";
+    const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
+    new_block.onopen = () => {
+      console.log("Connected to BlockCypher WebSocket server.");
+      new_block.send(
+        JSON.stringify({
+          event: "new-block", // Subscribe to block events
+        })
+      );
+    };
+    new_block.onmessage = (event) => {
+      var tx = JSON.parse(event.data);
+      this.blocks.unshift(tx);
+      this.blocks.pop();
+      console.log(tx);
+      console.log(this.blocks);
+    };
 
-    // new_block.onclose = () => {
-    //   console.log("chiusa");
-    // };
-
-    // const stats = new Stats();
-    // stats.showPanel(1);
+    new_block.onclose = () => {
+      console.log("chiusa");
+    };
+    
     await this.call();
-    // await this.call();
+
     const space = document.getElementById("container_blockchain");
-    // document.body.appendChild(stats.dom);
-    // const tick = () => {
-    //   stats.begin();
+
     const scene = new THREE.Scene(); // * contenitore per oggetti 3d
     const camera = new THREE.PerspectiveCamera(75, space.clientWidth / space.clientHeight, 0.1, 1000); // * punto di vista
     // fov estensione della scena, aspect ratio, near, far  is that objects further away from the camera than the value of far or closer than near won't be rendered.
@@ -196,10 +193,6 @@ export default {
       renderer.setSize(width, height);
       renderer.setPixelRatio(window.devicePixelRatio);
     });
-    // stats.end();
-    // requestAnimationFrame(tick);
-    // };
-    // requestAnimationFrame(tick);
   },
   beforeUnmount() {
     eventBus.off("increment");
