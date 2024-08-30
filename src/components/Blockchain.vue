@@ -113,9 +113,7 @@ export default {
     new_block.onmessage = (event) => {
       var tx = JSON.parse(event.data);
       if ("event" in tx) {
-        this.blocks.unshift(tx);
-        this.blocks.pop();
-        console.log(this.blocks);
+        alert("troppe richieste a server");
         console.log("error");
       } else {
         this.blocks.unshift(tx);
@@ -173,7 +171,7 @@ export default {
       distance -= 2;
       scene.add(cube.clone()); // add block to scena
       // text
-      this.load_text(this.blocks[i].height, numb_mat, scene, i);
+      this.load_text(this.blocks[i].height, numb_mat, scene, i); // text
     }
 
     camera.position.z = 6;
