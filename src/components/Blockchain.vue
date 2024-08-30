@@ -62,6 +62,37 @@ export default {
       texts[3].STRING_MESH.position.set(-0.05, -n.y / 2 + 0.3, -s.x / 2);
       texts[3].NUMB_MESH.rotation.y = texts[3].STRING_MESH.rotation.y = -Math.PI / 2;
     },
+    load_text(txt_block, mat, s, index) {
+      const loader = new FontLoader();
+      loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
+        // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
+        // TESTO
+
+        const numb_geometry = new TextGeometry(txt_block.toString(), {
+          font: font,
+          size: 0.15,
+          depth: 0.7, // inizia dal centro del cubo
+        });
+        const string_geometry = new TextGeometry("Number Block", {
+          font: font,
+          size: 0.1,
+          depth: 0.7, // inizia dal centro del cubo
+        });
+        const meshs = [];
+        for (let j = 0; j < 4; j++) {
+          const numb_mesh = new THREE.Mesh(numb_geometry, mat);
+          const string_mesh = new THREE.Mesh(string_geometry, mat);
+          meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
+          s.children[index + 1].add(numb_mesh, string_mesh);
+        }
+
+        const size_number = this.size(meshs[0].NUMB_MESH);
+        const size_string = this.size(meshs[0].STRING_MESH);
+
+        this.posizion_text(meshs, size_number, size_string);
+        // cordinate testo su cubo
+      });
+    },
   },
   async mounted() {
     eventBus.on("increment", (data) => {
@@ -81,10 +112,16 @@ export default {
     };
     new_block.onmessage = (event) => {
       var tx = JSON.parse(event.data);
-      this.blocks.unshift(tx);
-      this.blocks.pop();
-      console.log(tx);
-      console.log(this.blocks);
+      if ("event" in tx) {
+        this.blocks.unshift(tx);
+        this.blocks.pop();
+        console.log(this.blocks);
+        console.log("error");
+      } else {
+        this.blocks.unshift(tx);
+        this.blocks.pop();
+        console.log(this.blocks);
+      }
     };
 
     new_block.onclose = () => {
@@ -136,35 +173,7 @@ export default {
       distance -= 2;
       scene.add(cube.clone()); // add block to scena
       // text
-      const loader = new FontLoader();
-      loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
-        // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
-        // TESTO
-
-        const numb_geometry = new TextGeometry(this.blocks[i].height.toString(), {
-          font: font,
-          size: 0.15,
-          depth: 0.7, // inizia dal centro del cubo
-        });
-        const string_geometry = new TextGeometry("Number Block", {
-          font: font,
-          size: 0.1,
-          depth: 0.7, // inizia dal centro del cubo
-        });
-        const meshs = [];
-        for (let j = 0; j < 4; j++) {
-          const numb_mesh = new THREE.Mesh(numb_geometry, numb_mat);
-          const string_mesh = new THREE.Mesh(string_geometry, numb_mat);
-          meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
-          scene.children[i + 1].add(numb_mesh, string_mesh);
-        }
-
-        const size_number = this.size(meshs[0].NUMB_MESH);
-        const size_string = this.size(meshs[0].STRING_MESH);
-
-        this.posizion_text(meshs, size_number, size_string);
-        // cordinate testo su cubo
-      });
+      this.load_text(this.blocks[i].height, numb_mat, scene, i);
     }
 
     camera.position.z = 6;
