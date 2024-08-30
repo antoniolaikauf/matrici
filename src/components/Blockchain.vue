@@ -1,6 +1,5 @@
 <script>
 import eventBus from "./eventBus";
-// import Stats from "stats.js";
 import { defineAsyncComponent } from "vue";
 import axios from "axios";
 import * as THREE from "three";
@@ -35,17 +34,38 @@ export default {
     async GetBlock(i) {
       this.show_block = true;
       const dataBlock = await axios(`https://api.blockcypher.com/v1/btc/main/blocks/${i}?txstart=1&limit=10`);
-
       this.block_iesimo = dataBlock.data;
-      console.log(this.block_iesimo);
     },
     blockchain() {
       this.show_block = false;
       this.T_show = false;
     },
+    size(ob) {
+      const size_mesh = new THREE.Box3().setFromObject(ob);
+      const mesh_size = new THREE.Vector3();
+      const size_block = size_mesh.getSize(mesh_size);
+      return size_block;
+    },
+    posizion_text(texts, n, s) {
+      texts[0].NUMB_MESH.position.set(-(n.x / 2), -n.y / 2, 0.05); // Faccia frontale
+      texts[0].STRING_MESH.position.set(-0.4, -n.y / 2 + 0.3, 0.05);
+
+      texts[1].NUMB_MESH.position.set(n.x / 2, -n.y / 2, -0.05); // Faccia posteriore
+      texts[1].STRING_MESH.position.set(0.4, -n.y / 2 + 0.3, -0.05);
+      texts[1].NUMB_MESH.rotation.y = texts[1].STRING_MESH.rotation.y = Math.PI;
+
+      texts[2].NUMB_MESH.position.set(0.05, -n.y / 2, n.x / 2); // Faccia destra
+      texts[2].STRING_MESH.position.set(0.05, -n.y / 2 + 0.3, s.x / 2);
+      texts[2].NUMB_MESH.rotation.y = texts[2].STRING_MESH.rotation.y = Math.PI / 2;
+
+      texts[3].NUMB_MESH.position.set(-0.05, -n.y / 2, -n.x / 2); // Faccia sinistra
+      texts[3].STRING_MESH.position.set(-0.05, -n.y / 2 + 0.3, -s.x / 2);
+      texts[3].NUMB_MESH.rotation.y = texts[3].STRING_MESH.rotation.y = -Math.PI / 2;
+    },
   },
   async mounted() {
     eventBus.on("increment", (data) => {
+      // evento bus ascolto
       if (data.value === true) (this.T_show = true), (this.T_block = data.info_block);
     });
 
@@ -68,9 +88,9 @@ export default {
     };
 
     new_block.onclose = () => {
-      console.log("chiusa");
+      console.log("close connection");
     };
-    
+
     await this.call();
 
     const space = document.getElementById("container_blockchain");
@@ -139,32 +159,12 @@ export default {
           scene.children[i + 1].add(numb_mesh, string_mesh);
         }
 
-        const size_number = size(meshs[0].NUMB_MESH);
-        const size_string = size(meshs[0].STRING_MESH);
+        const size_number = this.size(meshs[0].NUMB_MESH);
+        const size_string = this.size(meshs[0].STRING_MESH);
 
+        this.posizion_text(meshs, size_number, size_string);
         // cordinate testo su cubo
-        meshs[0].NUMB_MESH.position.set(-(size_number.x / 2), -size_number.y / 2, 0.05); // Faccia frontale
-        meshs[0].STRING_MESH.position.set(-0.4, -size_number.y / 2 + 0.3, 0.05);
-
-        meshs[1].NUMB_MESH.position.set(size_number.x / 2, -size_number.y / 2, -0.05); // Faccia posteriore
-        meshs[1].STRING_MESH.position.set(0.4, -size_number.y / 2 + 0.3, -0.05);
-        meshs[1].NUMB_MESH.rotation.y = meshs[1].STRING_MESH.rotation.y = Math.PI;
-
-        meshs[2].NUMB_MESH.position.set(0.05, -size_number.y / 2, size_number.x / 2); // Faccia destra
-        meshs[2].STRING_MESH.position.set(0.05, -size_number.y / 2 + 0.3, size_string.x / 2);
-        meshs[2].NUMB_MESH.rotation.y = meshs[2].STRING_MESH.rotation.y = Math.PI / 2;
-
-        meshs[3].NUMB_MESH.position.set(-0.05, -size_number.y / 2, -size_number.x / 2); // Faccia sinistra
-        meshs[3].STRING_MESH.position.set(-0.05, -size_number.y / 2 + 0.3, -size_string.x / 2);
-        meshs[3].NUMB_MESH.rotation.y = meshs[3].STRING_MESH.rotation.y = -Math.PI / 2;
       });
-    }
-
-    function size(ob) {
-      const size_mesh = new THREE.Box3().setFromObject(ob);
-      const mesh_size = new THREE.Vector3();
-      const size_block = size_mesh.getSize(mesh_size);
-      return size_block;
     }
 
     camera.position.z = 6;
