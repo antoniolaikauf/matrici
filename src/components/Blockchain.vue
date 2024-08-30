@@ -46,6 +46,8 @@ export default {
   },
   async mounted() {
     eventBus.on("increment", (data) => {
+      console.log(data.info_block);
+
       if (data.value === true) (this.T_show = true), (this.T_block = data.info_block);
     });
 

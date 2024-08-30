@@ -9,7 +9,7 @@ export default {
   methods: {
     async transection_information() {
       const info_transection = await axios(`https://api.blockcypher.com/v1/btc/main/txs/${this.transection}`);
-      eventBus.emit("increment", { msg: this.transection, info_block: info_transection, value: true });
+      eventBus.emit("increment", { msg: this.transection, info_block: info_transection.data, value: true });
       console.log(info_transection.data);
     },
   },
