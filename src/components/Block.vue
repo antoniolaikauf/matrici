@@ -9,7 +9,7 @@ export default {
 };
 </script>
 <template>
-  <div id="block">
+  <div class="block">
     <div>Height: {{ value.height }}</div>
     <div>Timestamp: {{ value.time }}</div>
     <div>Size: {{ value.size }}</div>
@@ -22,12 +22,5 @@ export default {
 
 <style scoped lang="scss">
 @use "./../style/general.scss" as *;
-#block {
-  width: 80%;
-  margin: auto;
-  div {
-    padding: 10px 0;
-    cursor: pointer;
-  }
-}
+@use "./../style/__mixins.scss" as *;
 </style>
