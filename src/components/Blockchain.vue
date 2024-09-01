@@ -63,6 +63,8 @@ export default {
       texts[3].NUMB_MESH.rotation.y = texts[3].STRING_MESH.rotation.y = -Math.PI / 2;
     },
     load_text(txt_block, mat, s, index, f) {
+      console.log(txt_block, mat, s, index);
+
       const loader = new FontLoader();
       loader.load("/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
@@ -85,7 +87,6 @@ export default {
           meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
           if (!f) {
             s.children[index + 1].remove(numb_mesh);
-            console.log("ciao");
           }
           s.children[index + 1].add(numb_mesh, string_mesh);
         }
@@ -193,16 +194,16 @@ export default {
     new_block.onmessage = (event) => {
       this.flag_text = false;
       var tx = JSON.parse(event.data);
-      // if ("event" in tx) {
-      //   alert("troppe richieste a server");
-      //   console.log("error");
-      // } else {
-      this.blocks.unshift(tx);
-      this.blocks.pop();
-      this.blocks.forEach((element, z) => {
-        this.load_text(element.height, numb_mat, scene, z, flag_tet);
-      });
-      // }
+      if ("event" in tx) {
+        alert("troppe richieste a server");
+        console.log("error");
+      } else {
+        this.blocks.unshift(tx);
+        this.blocks.pop();
+        this.blocks.forEach((element, z) => {
+          this.load_text(element.height, numb_mat, scene, z, this.flag_text);
+        });
+      }
     };
 
     new_block.onclose = () => {

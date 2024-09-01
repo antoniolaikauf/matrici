@@ -46,7 +46,12 @@ header {
     justify-content: space-between;
     padding: 10px 30px;
     #search {
-      width: 30%;
+      width: 50%;
+    }
+    @media screen and (max-width: 600px) {
+      #search {
+        width: 80%;
+      }
     }
     img {
       width: 50px;
