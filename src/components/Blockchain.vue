@@ -63,9 +63,6 @@ export default {
       texts[3].NUMB_MESH.rotation.y = texts[3].STRING_MESH.rotation.y = -Math.PI / 2;
     },
     load_text(txt_block, mat, s, index, f) {
-      // console.log(txt_block, mat, s, index);
-      // console.log(s.children);
-
       const loader = new FontLoader();
       loader.load("/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
@@ -82,29 +79,32 @@ export default {
           depth: 0.7, // inizia dal centro del cubo
         });
 
+        const child = s.children[index + 1];
         const meshs = [];
+        if (!f) {
+          // for (let z = 0; z < child.children.length; z++) {
+          //   if (child.children[z] instanceof THREE.Mesh) {
+          //     child.remove(child.children[z]);
+          //   }
+          // }
+          while (child.children.length >= 0) {
+            child.remove(child.children[0]);
+          }
+        }
         for (let j = 0; j < 4; j++) {
           const numb_mesh = new THREE.Mesh(numb_geometry, mat);
           const string_mesh = new THREE.Mesh(string_geometry, mat);
           meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
-          const child = s.children[index + 1];
-          if (!f) {
-            child.forEach((element) => {
-              child.remove(element);
-            });
-            // console.log(child);
-            // child.remove(child.children[j]);
-            // child.remove(child.children[j + 4]);
-          }
-          s.children[index + 1].add(numb_mesh, string_mesh);
+          child.add(numb_mesh, string_mesh);
         }
         console.log(meshs);
+        console.log(child);
 
         const size_number = this.size(meshs[0].NUMB_MESH);
         const size_string = this.size(meshs[0].STRING_MESH);
 
-        this.posizion_text(meshs, size_number, size_string);
         // cordinate testo su cubo
+        this.posizion_text(meshs, size_number, size_string);
       });
     },
   },
@@ -201,6 +201,8 @@ export default {
       );
     };
     new_block.onmessage = (event) => {
+      console.log("ciaoo");
+
       this.flag_text = false;
       var tx = JSON.parse(event.data);
       if ("event" in tx) {
