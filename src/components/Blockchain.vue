@@ -24,7 +24,6 @@ export default {
   methods: {
     async call() {
       try {
-        // const data = await axios("https://blockstream.info/api/blocks/tip/height"); // altezza ultimo blocco
         const data = await axios("https://blockstream.info/api/blocks/");
         this.blocks = data.data;
       } catch (error) {
