@@ -63,7 +63,8 @@ export default {
       texts[3].NUMB_MESH.rotation.y = texts[3].STRING_MESH.rotation.y = -Math.PI / 2;
     },
     load_text(txt_block, mat, s, index, f) {
-      console.log(txt_block, mat, s, index);
+      // console.log(txt_block, mat, s, index);
+      console.log(s.children);
 
       const loader = new FontLoader();
       loader.load("/fonts/gentilis_bold.typeface.json", (font) => {
@@ -80,16 +81,21 @@ export default {
           size: 0.15,
           depth: 0.7, // inizia dal centro del cubo
         });
+
         const meshs = [];
         for (let j = 0; j < 4; j++) {
           const numb_mesh = new THREE.Mesh(numb_geometry, mat);
           const string_mesh = new THREE.Mesh(string_geometry, mat);
           meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
+          const child = s.children[index + 1];
           if (!f) {
-            s.children[index + 1].remove(numb_mesh);
+            console.log(child);
+            child.remove(child.children[j]);
+            child.remove(child.children[j + 4]);
           }
           s.children[index + 1].add(numb_mesh, string_mesh);
         }
+        console.log(meshs);
 
         const size_number = this.size(meshs[0].NUMB_MESH);
         const size_string = this.size(meshs[0].STRING_MESH);
@@ -184,6 +190,8 @@ export default {
     const token = "d4a50872e7484dbeb7550a4a00a11839";
     const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
     new_block.onopen = () => {
+      console.log(this.blocks);
+
       console.log("Connected to BlockCypher WebSocket server.");
       new_block.send(
         JSON.stringify({
@@ -198,6 +206,8 @@ export default {
         alert("troppe richieste a server");
         console.log("error");
       } else {
+        console.log(tx);
+
         this.blocks.unshift(tx);
         this.blocks.pop();
         this.blocks.forEach((element, z) => {
@@ -222,9 +232,9 @@ export default {
     <block v-show="show_block" :value="block_iesimo" @close="blockchain" />
     <div class="container-fluid" v-show="!show_block && !T_show">
       <div class="row">
-        <div id="blocks" class="col-12 col-md-3 text-center">
+        <div class="col-12 col-md-3 text-center">
           <div v-for="(block, i) in blocks">
-            <div @click="GetBlock(block.height)" class="py-2 blocks">Altezza Blocco: {{ block.height }}</div>
+            <span @click="GetBlock(block.height)" class="py-2 blocks">Altezza Blocco: {{ block.height }}</span>
           </div>
         </div>
         <div id="container_blockchain" class="col-12 col-md-9"></div>
