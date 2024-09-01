@@ -63,7 +63,7 @@ export default {
     },
     load_text(txt_block, mat, s, index) {
       const loader = new FontLoader();
-      loader.load("../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
+      loader.load("./../../node_modules/three/examples/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
         // TESTO
 
