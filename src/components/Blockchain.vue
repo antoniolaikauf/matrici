@@ -64,7 +64,7 @@ export default {
     },
     load_text(txt_block, mat, s, index, f) {
       // console.log(txt_block, mat, s, index);
-      console.log(s.children);
+      // console.log(s.children);
 
       const loader = new FontLoader();
       loader.load("/fonts/gentilis_bold.typeface.json", (font) => {
@@ -89,9 +89,12 @@ export default {
           meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
           const child = s.children[index + 1];
           if (!f) {
-            console.log(child);
-            child.remove(child.children[j]);
-            child.remove(child.children[j + 4]);
+            child.forEach((element) => {
+              child.remove(element);
+            });
+            // console.log(child);
+            // child.remove(child.children[j]);
+            // child.remove(child.children[j + 4]);
           }
           s.children[index + 1].add(numb_mesh, string_mesh);
         }
@@ -190,8 +193,6 @@ export default {
     const token = "d4a50872e7484dbeb7550a4a00a11839";
     const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
     new_block.onopen = () => {
-      console.log(this.blocks);
-
       console.log("Connected to BlockCypher WebSocket server.");
       new_block.send(
         JSON.stringify({
@@ -206,10 +207,10 @@ export default {
         alert("troppe richieste a server");
         console.log("error");
       } else {
-        console.log(tx);
-
         this.blocks.unshift(tx);
         this.blocks.pop();
+        console.log(this.blocks);
+
         this.blocks.forEach((element, z) => {
           this.load_text(element.height, numb_mat, scene, z, this.flag_text);
         });
