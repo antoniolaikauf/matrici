@@ -1,5 +1,5 @@
 <script>
-import eventBus from "./eventBus";
+import eventBus from "../eventBus";
 import { defineAsyncComponent } from "vue";
 import axios from "axios";
 import * as THREE from "three";
@@ -19,6 +19,7 @@ export default {
       block_iesimo: "",
       T_block: "",
       T_show: false,
+      flag_text: true,
     };
   },
   methods: {
@@ -61,20 +62,20 @@ export default {
       texts[3].STRING_MESH.position.set(-0.05, -n.y / 2 + 0.3, -s.x / 2);
       texts[3].NUMB_MESH.rotation.y = texts[3].STRING_MESH.rotation.y = -Math.PI / 2;
     },
-    load_text(txt_block, mat, s, index) {
+    load_text(txt_block, mat, s, index, f) {
       const loader = new FontLoader();
       loader.load("/fonts/gentilis_bold.typeface.json", (font) => {
         // impossibile centrare due linee a meno che non si crea una mesh per ogni linea. You could create a geometry for each line, perform the centering and then merge the geometries into a single one. Would this tradeoff be acceptable to you?
         // TESTO
+        const string_geometry = new TextGeometry("Number Block", {
+          font: font,
+          size: 0.1,
+          depth: 0.7, // inizia dal centro del cubo
+        });
 
         const numb_geometry = new TextGeometry(txt_block.toString(), {
           font: font,
           size: 0.15,
-          depth: 0.7, // inizia dal centro del cubo
-        });
-        const string_geometry = new TextGeometry("Number Block", {
-          font: font,
-          size: 0.1,
           depth: 0.7, // inizia dal centro del cubo
         });
         const meshs = [];
@@ -82,6 +83,10 @@ export default {
           const numb_mesh = new THREE.Mesh(numb_geometry, mat);
           const string_mesh = new THREE.Mesh(string_geometry, mat);
           meshs.push({ NUMB_MESH: numb_mesh, STRING_MESH: string_mesh });
+          if (!f) {
+            s.children[index + 1].remove(numb_mesh);
+            console.log("ciao");
+          }
           s.children[index + 1].add(numb_mesh, string_mesh);
         }
 
@@ -94,37 +99,6 @@ export default {
     },
   },
   async mounted() {
-    eventBus.on("increment", (data) => {
-      // evento bus ascolto
-      if (data.value === true) (this.T_show = true), (this.T_block = data.info_block);
-    });
-
-    const token = "d4a50872e7484dbeb7550a4a00a11839";
-    const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
-    new_block.onopen = () => {
-      console.log("Connected to BlockCypher WebSocket server.");
-      new_block.send(
-        JSON.stringify({
-          event: "new-block", // Subscribe to block events
-        })
-      );
-    };
-    new_block.onmessage = (event) => {
-      var tx = JSON.parse(event.data);
-      if ("event" in tx) {
-        alert("troppe richieste a server");
-        console.log("error");
-      } else {
-        this.blocks.unshift(tx);
-        this.blocks.pop();
-        console.log(this.blocks);
-      }
-    };
-
-    new_block.onclose = () => {
-      console.log("close connection");
-    };
-
     await this.call();
 
     const space = document.getElementById("container_blockchain");
@@ -168,9 +142,10 @@ export default {
       if (flag) cube.position.set(-2, distance - numbblock, -1);
       else cube.position.set(2, distance, -1);
       distance -= 2;
+
       scene.add(cube.clone()); // add block to scena
       // text
-      this.load_text(this.blocks[i].height, numb_mat, scene, i); // text
+      this.load_text(this.blocks[i].height, numb_mat, scene, i, this.flag_text); // text
     }
 
     camera.position.z = 6;
@@ -199,9 +174,43 @@ export default {
       renderer.setSize(width, height);
       renderer.setPixelRatio(window.devicePixelRatio);
     });
+
+    eventBus.on("New_block", (data) => {
+      // evento bus ascolto
+      if (data.value === true) (this.T_show = true), (this.T_block = data.info_block);
+    });
+
+    const token = "d4a50872e7484dbeb7550a4a00a11839";
+    const new_block = new WebSocket(`wss://socket.blockcypher.com/v1/btc/main?token=${token}`);
+    new_block.onopen = () => {
+      console.log("Connected to BlockCypher WebSocket server.");
+      new_block.send(
+        JSON.stringify({
+          event: "new-block", // Subscribe to block events
+        })
+      );
+    };
+    new_block.onmessage = (event) => {
+      this.flag_text = false;
+      var tx = JSON.parse(event.data);
+      // if ("event" in tx) {
+      //   alert("troppe richieste a server");
+      //   console.log("error");
+      // } else {
+      this.blocks.unshift(tx);
+      this.blocks.pop();
+      this.blocks.forEach((element, z) => {
+        this.load_text(element.height, numb_mat, scene, z, flag_tet);
+      });
+      // }
+    };
+
+    new_block.onclose = () => {
+      console.log("close connection");
+    };
   },
   beforeUnmount() {
-    eventBus.off("increment");
+    eventBus.off("New_block");
   },
 };
 </script>
