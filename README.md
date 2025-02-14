@@ -11,7 +11,11 @@ Per eseguire un addizioni con matrici le loro dimensioni devono essere uguali
 ![](addition-of-matrices-3x3-1625855167-515495451.png)
 
 ### MOLTIPLICAZIONE SCALARE
+una moltiplicazione tra un valore c e la matrice A è calcolata moltiplicando tutti gli elementi con c 
+![](image.png)
 
+### SOTTRAZIONE 
+la sottrazione tra due matrici è come la addizione ma bisogna moltiplicare i valori di una matrice per -1
 
 ### MOLTIPLICAZIONE CON MATRICI
 
