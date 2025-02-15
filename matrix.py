@@ -48,7 +48,6 @@ def prodotto(a, b):
     n = len(a[0])      
     p = len(b[0])       
 
-    # C = [[0 for _ in range(p)] for _ in range(m)] 
     C = []
     for i in range(m): # ciclo row
         cRow = []
