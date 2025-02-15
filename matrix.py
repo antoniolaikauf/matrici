@@ -25,4 +25,39 @@ def sottrazione(a, b, c):
     somma = add(moltiplicazione, b, c)
     return somma 
 
-print(sottrazione(A, B, C))
+# print(sottrazione(A, B, C))
+
+def trasposizione(a):
+    b = []
+    numColumn = len(a[0])
+    numRow = len(a)
+    for x in range(numColumn):
+        c = []
+        for y in range(numRow):
+            c.append(a[y][x])
+        b.append(c)
+    return b
+
+# print(trasposizione(A))
+
+A = [[1,2,3],[4,5,6]]
+B = [[1,2],[3,4],[5,6]]
+def prodotto(a, b):
+   
+    m = len(a)         
+    n = len(a[0])      
+    p = len(b[0])       
+
+    # C = [[0 for _ in range(p)] for _ in range(m)] 
+    C = []
+    for i in range(m): # ciclo row
+        cRow = []
+        for j in range(p): # ciclo colonne 
+            prod = 0
+            for k in range(n): # ciclo calcolo 
+                prod += a[i][k] * b[k][j]
+            cRow.append(prod)
+        C.append(cRow)
+    return C
+
+print(prodotto(A, B))
