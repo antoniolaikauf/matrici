@@ -1,5 +1,5 @@
 # type: ignore
-phrase = 'ciao, mi ciao'
+phrase = 'ciao mi chiamo antonio'
 
 class Tokenizer():
     
@@ -7,7 +7,7 @@ class Tokenizer():
         self.phrase = phrase
 
     def phraseAscii(self):
-        return [ ord(c) for c in self.phrase]
+        return [ ord(c) for c in self.phrase ]
     
     def get_stats(self, phrase):
         count = {}
@@ -18,35 +18,33 @@ class Tokenizer():
         return count
     
     def merge(self):
-        phrase = self.phraseAscii()
-        stats = self.get_stats(phrase)
+        phrase = self.phraseAscii() 
+        # si prendono le coppie maggiori 
+        stats = self.get_stats(phrase) 
         maxPair = max(stats, key=stats.get)
-        count = 256
-        print(phrase)
-        while stats and max(stats.values()) > 1:
-            print("Merging pair:", maxPair, "with frequency:", stats[maxPair])
-            stats.pop(maxPair)
+        # massimo che può raggiungere ASCII
+        count = 256 
+        # stats maggiori di 1 per fare il merge 
+        while max(stats.values()) > 1:
+            print(f"Merging pair: {maxPair} with frequency: {stats[maxPair]}")
             count += 1 
+
             x = 0
             while x < len(phrase) - 1:
                 if phrase[x] == maxPair[0] and phrase[x + 1] == maxPair[1]:
-                #  Sostituisci il primo elemento della coppia con il nuovo token...
+                    # sostituzione della prima coppia dalla frase 
                     phrase[x] = count
-                    # ...e rimuovi il secondo elemento
-                    del phrase[x + 1]
-                    # Non aumentiamo x perché la lista si è accorciata
+                    # rimozione della seconda coppia dalla frase
+                    del phrase[x + 1] 
                 else:
                     x += 1 
-            #     if phrase[x:x + 2] == list(maxPair):
-            #         phrase.pop(x + 1) 
-            #         phrase[x] = count
-            print(phrase)
+            # calcolo di nuovo le coppie dopo aver effettuato il merge 
             stats = self.get_stats(phrase)
-            print(maxPair)
+            # presa della nuova coppia 
             maxPair = max(stats, key=stats.get)
-            print(stats)
-
-
+        
+        print(f"Merge effettuati : {count - 256}")
+        return phrase
         
 
 
