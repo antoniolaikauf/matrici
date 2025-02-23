@@ -7,7 +7,7 @@ class Tokenizer():
         self.phrase = phrase
 
     def phraseAscii(self):
-        return [ ord(c) for c in self.phrase ]
+        return list(phrase.encode('iso-8859-1'))
     
     def get_stats(self, phrase):
         count = {}
