@@ -1,5 +1,5 @@
 # type: ignore
-phrase = 'ciao ciaoo'
+phrase = 'ciao ciaoo ci'
 
 class Tokenizer():
     
@@ -18,7 +18,7 @@ class Tokenizer():
         
         return count
     
-    def merge(self):
+    def encode(self):
         phrase = self.phraseAscii() 
         # si prendono le coppie maggiori 
         stats = self.get_stats(phrase) 
@@ -50,24 +50,27 @@ class Tokenizer():
     
     def decode(self):
         merge = self.vocab # merge salvati
-        phrase = self.merge()
+        phrase = self.encode()
         count = 0
 
         while(count != len(merge)):
             count += 1
-
-            for x in range(len(phrase)):
+            i = 0
+            while i != len(phrase):
                 # si trova che l'elemento della frase sia un merge e quindi maggiore di 256
-                if phrase[x] > 256:
+                if phrase[i] > 256:
+                    element = merge.get(phrase[i])
                     # sostituzione
-                    element = merge.get(phrase[x])
-                    phrase[x] = element[0]
-                    phrase.insert(x + 1, element[1])
-
+                    phrase[i] = element[0]
+                    phrase.insert(i + 1, element[1])
+                i+= 1
+            print(phrase)
+        
+        print(self.phraseAscii() == phrase)
         return bytes(phrase)
 
 
 token = Tokenizer(phrase)
 
-print(token.merge())
+print(token.encode())
 print(token.decode())
