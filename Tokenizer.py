@@ -1,5 +1,5 @@
 # type: ignore
-phrase = 'ciao ciaoo ci'
+phrase = 'h'
 
 class Tokenizer():
     
@@ -56,6 +56,7 @@ class Tokenizer():
         while(count != len(merge)):
             count += 1
             i = 0
+            # si fa un whule perchè la lista si aggiorna e quindi anche il ciclo si deve aggiornare e addattarsi 
             while i != len(phrase):
                 # si trova che l'elemento della frase sia un merge e quindi maggiore di 256
                 if phrase[i] > 256:
@@ -68,9 +69,11 @@ class Tokenizer():
         
         print(self.phraseAscii() == phrase)
         return bytes(phrase)
+    
+    
 
+if __name__ == "__main__":
+    token = Tokenizer(phrase)
 
-token = Tokenizer(phrase)
-
-print(token.encode())
-print(token.decode())
+    print(token.encode())
+    print(token.decode())

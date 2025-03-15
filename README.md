@@ -36,3 +36,8 @@ ci sono delle proprietà dei numeri che si utilizzano anche con le matrici
 - (A<sup>T</sup>)<sup>T</sup> = A
 
 
+
+
+# IMMAGINE VETTORI 
+
+![](vector.png)
