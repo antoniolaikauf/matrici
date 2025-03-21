@@ -1,5 +1,5 @@
 # type: ignore
-phrase = 'h'
+phrase = 'cici'
 
 class Tokenizer():
     
@@ -25,6 +25,8 @@ class Tokenizer():
         maxPair = max(stats, key=stats.get)
         # massimo che può raggiungere ASCII
         count = 256 
+        print(stats)
+        print(max(stats.values()))
         # stats maggiori di 1 per fare il merge 
         while max(stats.values()) > 1:
             print(f"Merging pair: {maxPair} with frequency: {stats[maxPair]}")
