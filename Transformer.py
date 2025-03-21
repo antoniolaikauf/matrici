@@ -3,14 +3,15 @@ import math
 
 class Tokenizer:
     def __init__(self):
-        self.Token = 'cici'
+        self.Token = 'uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu'
         self.distribution = math.sqrt(6/256)
         self.maxToken = 256
         self.maxMerge = 10
-
+    
     def tokenInput(self):
         return [ord(char) for char in self.Token]
     
+    # create a dictionary to track all the pair and their appearances 
     def encode(self, tokens):
         dictionary = {}
 
@@ -21,16 +22,20 @@ class Tokenizer:
 
         return dictionary
     
+    # merge the pair that appears more
     def merge(self):
         phrase = self.tokenInput()
         tokens = self.encode(phrase)
-        pair = max(tokens, key=tokens.get)
+        maxPair = max(tokens, key=tokens.get)
 
         count = 0
         
+        # cicle until you don't find any pair that appears more than two or ypu have finished the max number for merge 
         while (max(tokens.values()) > 1 and count < self.maxToken):
+            print(f"Merging pair: {maxPair} with frequency: {tokens[maxPair]}")
+
             for idxPair in range(len(phrase) - 1):
-                if(phrase[idxPair] == pair[0] and phrase[idxPair + 1] == pair[1]):
+                if(phrase[idxPair] == maxPair[0] and phrase[idxPair + 1] == maxPair[1]):
                     self.maxToken += 1
                     phrase[idxPair] = self.maxToken
                     del phrase[idxPair + 1]
@@ -38,10 +43,9 @@ class Tokenizer:
             
             tokens = self.encode(phrase)
             count += 1
-
-            print(phrase)
-
-        return pair
+        
+        print(f"The phrase is: {phrase}")
+        return phrase
 
     def decode(self):
         pass
