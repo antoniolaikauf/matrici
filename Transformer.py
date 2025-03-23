@@ -113,33 +113,42 @@ class Tokenizer:
                 dati.write(f"the key {key} -> merge {token}\n")
 
 
-class HeaderAttention:
+class MultiHeadAttention:
     def __init__(self):
         self.d_model = 512
         self.k = default_rng(42).random((1,self.d_model))
         self.v = default_rng(41).random((1,self.d_model))
         self.q = default_rng(40).random((1,self.d_model))
-        self.w = default_rng(39).random((self.d_model, 64))
-        self.headNumber = self.q.shape[1] // self.w.shape[1]
+
+        self.headNumber = self.d_model // 64
+        self.d_k =self.d_model // self.headNumber
+
+        self.w_q = [default_rng(39 + x).random((self.d_model, self.d_k)) for x in range(self.headNumber)]
+        self.w_k = [default_rng(39 + x).random((self.d_model, self.d_k)) for x in range(self.headNumber)]
+        self.w_v = [default_rng(39 + x).random((self.d_model, self.d_k)) for x in range(self.headNumber)]
 
     def multiHead(self):
+        heads = []
         for head in range(self.headNumber):
-            wk = np.dot(self.k, self.w)
-            wv = np.dot(self.v, self.w)
-            wq = np.dot(self.q, self.w)
-            self.head( wk, wv, wq)
-        pass
+            wk = np.dot(self.k, self.w_k[head])
+            wv = np.dot(self.v, self.w_v[head])
+            wq = np.dot(self.q, self.w_q[head])
+            h = self.head( wk, wv, wq)
+            heads.append(h)
 
+        concat = np.concatenate(heads, axis=-1)
+        print("Concatenated output shape:", concat.shape)
+        return concat  
+        
     def softmax(self, x):
-        e_x = np.exp(x - np.max(x))
-        return e_x / e_x.sum(axis=0)
+        e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+        return e_x / np.sum(e_x, axis=-1, keepdims=True)
 
     def head(self, k, v, q):
         mol = np.dot(q , np.transpose(k))
-        div = mol / math.sqrt(self.d_model)
-        Smax = np.dot(self.softmax(div), v)
-        print(Smax)
-        pass
+        div = mol / math.sqrt(self.d_k)
+        Smax = np.dot(self.softmax(div), v)        
+        return Smax
 
 
 class Transformers(Tokenizer):
@@ -152,7 +161,7 @@ class Transformers(Tokenizer):
         # print(self.tokenInputVector())
 
 t =Transformers()
-h = HeaderAttention()
+h = MultiHeadAttention()
 print(h.multiHead())
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
 # print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
