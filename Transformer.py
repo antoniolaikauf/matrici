@@ -75,20 +75,24 @@ class Tokenizer:
         assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
 
         # while loop over all the element in phrase 
-        while (self.vocab.get(phrase[idx]) and idx != len(phrase) - 1):
+        while (idx < len(phrase)):
             print(phrase)
             # take the pair in the vocab
             element = self.vocab.get(phrase[idx])
+            print(phrase[idx])
+            print(len('fffffffffffffffffffuuuuuuuuuuuuuuuu'))
             # we change the element in phrase 
             phrase[idx] = element[0]
             if len(element) > 1:
             # if the len of the pair is more than 1 we change the second element
                 phrase.insert(idx + 1, element[1])
-        
-            idx += 1
             
-            # check if the element exist in the dictionary
             assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
+
+            print('numeroooo', len(phrase))
+            if phrase[idx] < 255:
+                idx += 1
+            
         # convert to char
         if (text): phrase = ''.join(chr(x) for x in phrase)
 
@@ -115,7 +119,7 @@ class Transformers(Tokenizer):
 
 t =Transformers()
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
-print(t.decode(t.encode('uuuuuuu')))
+print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
 t.mergeFile()
 # print(t.decode([76,600], True))
 # print(t.decode(t.encode('cici'), True))
