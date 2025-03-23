@@ -114,39 +114,54 @@ class Tokenizer:
 
 
 class MultiHeadAttention:
-    def __init__(self):
+    def __init__(self, seq_length = 6):
+        # length of each token vector 
         self.d_model = 512
-        self.k = default_rng(42).random((1,self.d_model))
-        self.v = default_rng(41).random((1,self.d_model))
-        self.q = default_rng(40).random((1,self.d_model))
-
+        self.seq_length = seq_length
+        # initialization of key, value, query 
+        self.k = default_rng(42).random((self.seq_length,self.d_model)) 
+        self.v = default_rng(41).random((self.seq_length,self.d_model))
+        self.q = default_rng(40).random((self.seq_length,self.d_model))
+        # number of head
         self.headNumber = self.d_model // 64
-        self.d_k =self.d_model // self.headNumber
-
-        self.w_q = [default_rng(39 + x).random((self.d_model, self.d_k)) for x in range(self.headNumber)]
-        self.w_k = [default_rng(39 + x).random((self.d_model, self.d_k)) for x in range(self.headNumber)]
-        self.w_v = [default_rng(39 + x).random((self.d_model, self.d_k)) for x in range(self.headNumber)]
+        self.d_k = self.d_model // self.headNumber
+        #weith of every query, value , key for every head
+        self.w_q = [default_rng(10 + x).random((self.d_model, self.d_k)) * 0.01 for x in range(self.headNumber)]
+        self.w_k = [default_rng(20 + x).random((self.d_model, self.d_k)) * 0.01 for x in range(self.headNumber)]
+        self.w_v = [default_rng(30 + x).random((self.d_model, self.d_k)) * 0.01 for x in range(self.headNumber)]
 
     def multiHead(self):
         heads = []
         for head in range(self.headNumber):
-            wk = np.dot(self.k, self.w_k[head])
-            wv = np.dot(self.v, self.w_v[head])
-            wq = np.dot(self.q, self.w_q[head])
-            h = self.head( wk, wv, wq)
+            # we divide the query, value, key in chunk of 6 x 64
+            wk = np.dot(self.k, self.w_k[head]) # dimension 6 x 64
+            wv = np.dot(self.v, self.w_v[head]) # dimension 6 x 64
+            wq = np.dot(self.q, self.w_q[head]) # dimension 6 x 64
+            h = self.head(wk, wv, wq) # return 64 token of every words so an vector of 6x64        
             heads.append(h)
 
-        concat = np.concatenate(heads, axis=-1)
-        print("Concatenated output shape:", concat.shape)
+        # we concatenate every chunk of 64 
+        # forst word [[a1, a2, a3] and  [[b1, b2, b3]
+        #second word [a4, a5, a6]]      [b4, b5, b6]]
+
+        #now the array is 
+        #[[a1, a2, a3, b1, b2, b3],
+        #[a4, a5, a6, b4, b5, b6]]
+        
+        concat = np.concatenate(heads, axis=-1) 
+        print("Concatenated output shape:", concat)
         return concat  
         
     def softmax(self, x):
-        e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+        # exp of every element
+        e_x = np.exp(x - np.max(x, axis=-1, keepdims=True)) 
+        # sum of every exp element th exp is 2.7
         return e_x / np.sum(e_x, axis=-1, keepdims=True)
 
     def head(self, k, v, q):
         mol = np.dot(q , np.transpose(k))
         div = mol / math.sqrt(self.d_k)
+        # print(f"softmax: {self.softmax(div)}")
         Smax = np.dot(self.softmax(div), v)        
         return Smax
 
@@ -162,7 +177,7 @@ class Transformers(Tokenizer):
 
 t =Transformers()
 h = MultiHeadAttention()
-print(h.multiHead())
+print(h.multiHead().shape)
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
 # print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
 # t.mergeFile()
