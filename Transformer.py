@@ -7,47 +7,53 @@ class Tokenizer:
         self.distribution = math.sqrt(6/256)
         self.maxToken = 256
         self.maxMerge = 10
+        self.vocab =  {idx: tuple([idx]) for idx in range(256)}
     
     def tokenInput(self):
         return [ord(char) for char in self.Token]
     
     # create a dictionary to track all the pair and their appearances 
-    def encode(self, tokens):
+    def pairs(self, tokens):
         dictionary = {}
 
         for idxToken in range(len(tokens) - 1):            
             pair = tuple(tokens[idxToken : idxToken + 2])
-            if(pair not in dictionary ): dictionary[pair] = 1
+            if (pair not in dictionary ): dictionary[pair] = 1
             else: dictionary[pair] +=1
 
         return dictionary
     
     # merge the pair that appears more
-    def merge(self):
+    def encode(self):
         phrase = self.tokenInput()
-        tokens = self.encode(phrase)
+        tokens = self.pairs(phrase)
         maxPair = max(tokens, key=tokens.get)
 
         count = 0
         
         # cicle until you don't find any pair that appears more than two or ypu have finished the max number for merge 
-        while (max(tokens.values()) > 1 and count < self.maxToken):
-            print(f"Merging pair: {maxPair} with frequency: {tokens[maxPair]}")
+        while ((max(tokens.values()) > 1) and (count < self.maxMerge)):
+            print(f"Merging pair: {maxPair} with frequency: {tokens[maxPair]} count {count}")
 
             for idxPair in range(len(phrase) - 1):
                 if(phrase[idxPair] == maxPair[0] and phrase[idxPair + 1] == maxPair[1]):
+                    self.vocab[self.maxToken] = maxPair
                     self.maxToken += 1
                     phrase[idxPair] = self.maxToken
                     del phrase[idxPair + 1]
                     break
             
-            tokens = self.encode(phrase)
+            tokens = self.pairs(phrase)
             count += 1
         
         print(f"The phrase is: {phrase}")
         return phrase
 
-    def decode(self):
+    def decode(self, phrase):
+        count = 0
+        while (self.maxMerge > count and (len(self.vocab) - 256) < count):
+
+            count += 1
         pass
     
     def tokenInputVector(self):
@@ -66,6 +72,7 @@ class Transformers(Tokenizer):
 
 t =Transformers()
 # print(t.encode())
-print(t.merge())
+print(t.encode())
+# print(t.decode())
         
         

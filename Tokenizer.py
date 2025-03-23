@@ -58,7 +58,7 @@ class Tokenizer():
         while(count != len(merge)):
             count += 1
             i = 0
-            # si fa un whule perchè la lista si aggiorna e quindi anche il ciclo si deve aggiornare e addattarsi 
+            # si fa un while perchè la lista si aggiorna e quindi anche il ciclo si deve aggiornare e addattarsi 
             while i != len(phrase):
                 # si trova che l'elemento della frase sia un merge e quindi maggiore di 256
                 if phrase[i] > 256:
