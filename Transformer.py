@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import default_rng
 import math
 
 class Tokenizer:
@@ -112,6 +113,35 @@ class Tokenizer:
                 dati.write(f"the key {key} -> merge {token}\n")
 
 
+class HeaderAttention:
+    def __init__(self):
+        self.d_model = 512
+        self.k = default_rng(42).random((1,self.d_model))
+        self.v = default_rng(41).random((1,self.d_model))
+        self.q = default_rng(40).random((1,self.d_model))
+        self.w = default_rng(39).random((self.d_model, 64))
+        self.headNumber = self.q.shape[1] // self.w.shape[1]
+
+    def multiHead(self):
+        for head in range(self.headNumber):
+            wk = np.dot(self.k, self.w)
+            wv = np.dot(self.v, self.w)
+            wq = np.dot(self.q, self.w)
+            self.head( wk, wv, wq)
+        pass
+
+    def softmax(self, x):
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum(axis=0)
+
+    def head(self, k, v, q):
+        mol = np.dot(q , np.transpose(k))
+        div = mol / math.sqrt(self.d_model)
+        Smax = np.dot(self.softmax(div), v)
+        print(Smax)
+        pass
+
+
 class Transformers(Tokenizer):
     def __init__(self):
         super().__init__()
@@ -122,9 +152,11 @@ class Transformers(Tokenizer):
         # print(self.tokenInputVector())
 
 t =Transformers()
+h = HeaderAttention()
+print(h.multiHead())
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
-print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
-t.mergeFile()
+# print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
+# t.mergeFile()
 # print(t.decode([76, 500], True))
 
         
