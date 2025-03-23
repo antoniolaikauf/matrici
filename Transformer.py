@@ -3,14 +3,13 @@ import math
 
 class Tokenizer:
     def __init__(self):
-        self.Token = 'uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu'
         self.distribution = math.sqrt(6/256)
         self.maxToken = 256
         self.maxMerge = 10
         self.vocab =  {idx: tuple([idx]) for idx in range(256)}
     
-    def tokenInput(self):
-        return [ord(char) for char in self.Token]
+    def tokenInput(self, tokens):
+        return [ord(char) for char in tokens]
     
     # create a dictionary to track all the pair and their appearances 
     def pairs(self, tokens):
@@ -24,37 +23,43 @@ class Tokenizer:
         return dictionary
     
     # merge the pair that appears more
-    def encode(self):
-        phrase = self.tokenInput()
-        tokens = self.pairs(phrase)
-        maxPair = max(tokens, key=tokens.get)
+    def encode(self, phrase):
+        tokens = self.tokenInput(phrase)
+        tokensPairs = self.pairs(tokens)
+        maxPair = max(tokensPairs, key=tokensPairs.get)
 
         count = 0
         
         # cicle until you don't find any pair that appears more than two or ypu have finished the max number for merge 
-        while ((max(tokens.values()) > 1) and (count < self.maxMerge)):
-            print(f"Merging pair: {maxPair} with frequency: {tokens[maxPair]} count {count}")
+        while ((max(tokensPairs.values()) > 1) and (count < self.maxMerge)):
+            print(f"Merging pair: {maxPair} with frequency: {tokensPairs[maxPair]} count {count}")
 
-            for idxPair in range(len(phrase) - 1):
-                if(phrase[idxPair] == maxPair[0] and phrase[idxPair + 1] == maxPair[1]):
+            for idxPair in range(len(tokens) - 1):
+                if(tokens[idxPair] == maxPair[0] and tokens[idxPair + 1] == maxPair[1]):
                     self.vocab[self.maxToken] = maxPair
+                    tokens[idxPair] = self.maxToken
+                    del tokens[idxPair + 1]
                     self.maxToken += 1
-                    phrase[idxPair] = self.maxToken
-                    del phrase[idxPair + 1]
                     break
             
-            tokens = self.pairs(phrase)
+            tokensPairs = self.pairs(tokens)
             count += 1
         
-        print(f"The phrase is: {phrase}")
-        return phrase
+        print(f"The phrase is: {tokens}")
+        return tokens
 
-    def decode(self, phrase):
-        count = 0
-        while (self.maxMerge > count and (len(self.vocab) - 256) < count):
-
-            count += 1
-        pass
+    def decode(self, phrase, text= False):
+        phraseDecode = phrase
+        print(self.vocab)
+        print(phrase)
+        for x in range(len(phrase)):
+            element = self.vocab.get(phrase[x])
+            assert element != None, f"non esiste merge {phrase[x]}"
+            phraseDecode[x] = element[0]
+            if len(element) > 1: phraseDecode.insert(x + 1, element[1])
+        
+        if(text): phraseDecode = ''.join(chr(x) for x in phraseDecode)
+        return phraseDecode
     
     def tokenInputVector(self):
         return {tk : np.full(256, self.distribution) for tk in self.tokenInput()}
@@ -71,8 +76,7 @@ class Transformers(Tokenizer):
         # print(self.tokenInputVector())
 
 t =Transformers()
-# print(t.encode())
-print(t.encode())
-# print(t.decode())
+print(t.decode(t.encode('cici'), True))
+# print(t.decode(t.encode('cici'), True))
         
         
