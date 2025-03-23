@@ -27,34 +27,41 @@ class Tokenizer:
     # merge the pair that appears more
     def encode(self, phrase):
         tokens = self.tokenInput(phrase)
-        tokensPairs = self.pairs(tokens)
-        maxPair = max(tokensPairs, key=tokensPairs.get)
+        tokensPairs = self.pairs(tokens) # all possible merge 
+        maxPair = max(tokensPairs, key=tokensPairs.get) # you get the torque that appears the most
 
         count = 0
         
-        # cicle until you don't find any pair that appears more than two or ypu have finished the max number for merge 
+        # cicle until you don't find any pair that appears more than two or the possible merge have finisched 
         while ((max(tokensPairs.values()) > 1) and (count <= self.maxMerge)):
 
             idxPair = 0
+            #cile on the phrase 
             while idxPair < len(tokens) - 1:
+                print(f"Merging pair: {maxPair}")
+                #if we have a match we change it with a merge
                 if tokens[idxPair] == maxPair[0] and tokens[idxPair + 1] == maxPair[1]:
-                    # sostituzione della prima coppia dalla frase 
+
                     tokenToUse = None
+                    #if we have a merge inside our vocab that is equal to maxPair we take that 
                     for token, pair in self.vocab.items():
                         if pair == maxPair:
                             tokenToUse = token  # Uso il token esistente
                             break
-                    
+
+                    # if we don't have a merge inside our vocab we create a new token  
                     if tokenToUse == None:
                         tokenToUse = self.maxToken
                         self.vocab[self.maxToken] = maxPair
-                        self.maxToken += 1 
+                        self.maxToken += 1
 
+                    # change the pair with the token mint
                     tokens[idxPair] = tokenToUse
-                    # rimozione della seconda coppia dalla frase
                     del tokens[idxPair + 1] 
 
                 else:
+                    # we increase the idxPair only if we don't find a match if we shrink the phrase we don't want to increase 
+                    # the index because could skip some number  
                     idxPair += 1 
                     
             # we create the new pair token with the new merge 
@@ -69,27 +76,24 @@ class Tokenizer:
     def decode(self, phrase, text= False):
         # the idx we increase by 1 because if a pair es. 276 is the merge between 256 and 257 if we increase by two 
         # we could skip the element 257 that is a merge 
+
         idx = 0
-        print(self.vocab)
-        # check if the element exist in the dictionary
-        assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
 
         # while loop over all the element in phrase 
         while (idx < len(phrase)):
-            print(phrase)
+            
+            # check if the element exist in the dictionary     
+            assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
             # take the pair in the vocab
             element = self.vocab.get(phrase[idx])
-            print(phrase[idx])
-            print(len('fffffffffffffffffffuuuuuuuuuuuuuuuu'))
             # we change the element in phrase 
             phrase[idx] = element[0]
             if len(element) > 1:
             # if the len of the pair is more than 1 we change the second element
                 phrase.insert(idx + 1, element[1])
-            
-            assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
 
-            print('numeroooo', len(phrase))
+
+            # we do't increase th number of idx until is not a merge because if the phrase[idx] > 256 we know that is a merge and we stay here        
             if phrase[idx] < 255:
                 idx += 1
             
@@ -103,9 +107,9 @@ class Tokenizer:
     
     def mergeFile(self):
         print(self.vocab)
-        # with open('file.txt', 'a') as dati:
-            # for key, token in self.vocab.items():
-                # dati.write(f"the key {key} -> merge {token}\n")
+        with open('file.txt', 'w') as dati:
+            for key, token in self.vocab.items():
+                dati.write(f"the key {key} -> merge {token}\n")
 
 
 class Transformers(Tokenizer):
@@ -121,7 +125,7 @@ t =Transformers()
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
 print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
 t.mergeFile()
-# print(t.decode([76,600], True))
-# print(t.decode(t.encode('cici'), True))
+# print(t.decode([76, 500], True))
+
         
         
