@@ -31,9 +31,8 @@ class Tokenizer:
         count = 0
         
         # cicle until you don't find any pair that appears more than two or ypu have finished the max number for merge 
-        while ((max(tokensPairs.values()) > 1) and (count < self.maxMerge)):
+        while ((max(tokensPairs.values()) > 1) and (count <= self.maxMerge)):
             print(f"Merging pair: {maxPair} with frequency: {tokensPairs[maxPair]} count {count}")
-
             for idxPair in range(len(tokens) - 1):
                 if(tokens[idxPair] == maxPair[0] and tokens[idxPair + 1] == maxPair[1]):
                     self.vocab[self.maxToken] = maxPair
@@ -43,23 +42,32 @@ class Tokenizer:
                     break
             
             tokensPairs = self.pairs(tokens)
+            maxPair = max(tokensPairs, key=tokensPairs.get)
             count += 1
         
         print(f"The phrase is: {tokens}")
         return tokens
 
     def decode(self, phrase, text= False):
-        phraseDecode = phrase
-        print(self.vocab)
-        print(phrase)
-        for x in range(len(phrase)):
-            element = self.vocab.get(phrase[x])
-            assert element != None, f"non esiste merge {phrase[x]}"
-            phraseDecode[x] = element[0]
-            if len(element) > 1: phraseDecode.insert(x + 1, element[1])
+        idx = 0
+        assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
+
+        while (self.vocab.get(phrase[idx]) and idx != len(phrase) - 1):
+
+
+            element = self.vocab.get(phrase[idx])
+            if len(element) == 1:
+                phrase[idx] = element[0]
+                idx += 1
+            else:
+                phrase[idx] = element[0]
+                phrase.insert(idx + 1, element[1])
+                idx += 2
+            
+            assert self.vocab.get(phrase[idx]) != None , f'carattere non esiste nel dizionario {phrase[idx]}'
         
-        if(text): phraseDecode = ''.join(chr(x) for x in phraseDecode)
-        return phraseDecode
+        if(text): phrase = ''.join(chr(x) for x in phrase)
+        return phrase
     
     def tokenInputVector(self):
         return {tk : np.full(256, self.distribution) for tk in self.tokenInput()}
@@ -76,7 +84,8 @@ class Transformers(Tokenizer):
         # print(self.tokenInputVector())
 
 t =Transformers()
-print(t.decode(t.encode('cici'), True))
+print(t.decode(t.encode('uuuuuuuuuuuuuuuuuuufffffffffffff'), True))
+# print(t.decode([76,600], True))
 # print(t.decode(t.encode('cici'), True))
         
         
