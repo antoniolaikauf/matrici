@@ -149,7 +149,7 @@ class MultiHeadAttention:
         #[a4, a5, a6, b4, b5, b6]]
         
         concat = np.concatenate(heads, axis=-1) 
-        print("Concatenated output shape:", concat)
+        # print("Concatenated output shape:", concat)
         return concat  
         
     def softmax(self, x):
@@ -165,19 +165,40 @@ class MultiHeadAttention:
         Smax = np.dot(self.softmax(div), v)        
         return Smax
 
+class  FFN(MultiHeadAttention):
+    def __init__(self):
+        super().__init__()
+        # matrici di dimensioni 512x2048
+        self.w = [default_rng(10 + x).random((self.d_model, self.d_model * 4)) for x in range(self.seq_length)]
+        self.b= [default_rng(20 + x).random((self.d_model, self.d_model * 4)) for x in range(self.seq_length)]
+        
+    def Relu(self):
+        pass
+
+    def linearTrans(self):
+        for x in self.multiHead():
+            
+
+
+
+
 
 class Transformers(Tokenizer):
     def __init__(self):
         super().__init__()
 
     def encoder(self):
+        
         pass
         # print(self.distribution)
         # print(self.tokenInputVector())
 
 t =Transformers()
 h = MultiHeadAttention()
-print(h.multiHead().shape)
+
+f = FFN()
+print(f.linearTrans())
+# print(h.multiHead().shape)
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
 # print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
 # t.mergeFile()
