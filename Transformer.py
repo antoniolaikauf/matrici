@@ -103,8 +103,9 @@ class Tokenizer:
 
         return phrase
     
-    def tokenInputVector(self):
-        return {tk : np.full(256, self.distribution) for tk in self.tokenInput()}
+    def tokenInputVector(self, phrase):
+        # vettore di 256 elementi con lo stesso valore settato inizialmente
+        return {tk : default_rng(tk).random((1,512)) * 0.1 for tk in self.encode(phrase)}
     
     def mergeFile(self):
         print(self.vocab)
@@ -165,19 +166,37 @@ class MultiHeadAttention:
         Smax = np.dot(self.softmax(div), v)        
         return Smax
 
+#feed foward
 class  FFN(MultiHeadAttention):
     def __init__(self):
         super().__init__()
-        # matrici di dimensioni 512x2048
-        self.w = [default_rng(10 + x).random((self.d_model, self.d_model * 4)) for x in range(self.seq_length)]
-        self.b= [default_rng(20 + x).random((self.d_model, self.d_model * 4)) for x in range(self.seq_length)]
+        # matrici di dimensioni 512x2048 per prima trasformazione lineare
+        self.w = [default_rng(10 + x).random((self.d_model, self.d_model * 4)) * 0.01 for x in range(self.seq_length)]
+        self.b= [default_rng(20 + x).random((1, self.d_model * 4)) * 0.01 for x in range(self.seq_length)]
+        # matrici di dimensioni 2048x512 per seconda trasformazione lineare cosi da riportare l'output a 512
+        self.b2= [default_rng(20 + x).random((1, self.d_model)) * 0.01 for x in range(self.seq_length)]
+        self.w2 = [default_rng(10 + x).random((self.d_model * 4, self.d_model)) * 0.01 for x in range(self.seq_length)]
         
-    def Relu(self):
-        pass
+    def Relu(self, x):
+        for index, value in enumerate(x[0]): 
+            if value < 0: x[index] = 0
+        return x
 
-    def linearTrans(self):
-        for x in self.multiHead():
-            
+    def  linearTransNetwork(self):
+        output = []
+        for index, value in enumerate(self.multiHead()):
+            # value*W + b
+            mul = np.dot(value, self.w[index])
+            add = np.add(mul, self.b[index])
+            # risultato inserito nella funzione RELU 
+            firstLinear = self.Relu(add)
+            # value*W + b
+            mul2 = np.dot(firstLinear, self.w2[index])
+            add2 = np.add(mul2, self.b2[index])
+
+            output.append(add2)
+
+        return output
 
 
 
@@ -197,7 +216,8 @@ t =Transformers()
 h = MultiHeadAttention()
 
 f = FFN()
-print(f.linearTrans())
+print(t.tokenInputVector('ciao'))
+# print(f.linearTransNetwork())
 # print(h.multiHead().shape)
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
 # print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
