@@ -103,10 +103,6 @@ class Tokenizer:
 
         return phrase
     
-    def tokenInputVector(self, phrase):
-        # vettore di 256 elementi con lo stesso valore settato inizialmente
-        return {tk : default_rng(tk).random((1,512)) * 0.1 for tk in self.encode(phrase)}
-    
     def mergeFile(self):
         print(self.vocab)
         with open('file.txt', 'w') as dati:
@@ -199,8 +195,15 @@ class  FFN(MultiHeadAttention):
         return output
 
 
+class Embedding(Tokenizer):
+    def __init__(self):
+        # self.weight = 
+        self.d_model = 512
+        self.w = [default_rng(10 + idx).random((1, self.d_model)) * 0.01 for idx in range(len(self.encode('ciao')))] 
 
-
+    def tokenInputVector(self):
+        vectors = [default_rng(1 + idx).random((1, self.d_model)) * 0.01 for idx in range(len(self.encode('ciao')))]
+        return vectors
 
 class Transformers(Tokenizer):
     def __init__(self):
@@ -216,7 +219,8 @@ t =Transformers()
 h = MultiHeadAttention()
 
 f = FFN()
-print(t.tokenInputVector('ciao'))
+e = Embedding()
+print(e.tokenInputVector())
 # print(f.linearTransNetwork())
 # print(h.multiHead().shape)
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
