@@ -71,7 +71,7 @@ class Tokenizer:
 
             count += 1
         
-        print(f"The phrase is: {tokens}")
+        # print(f"The phrase is: {tokens}")
         return tokens
 
     def decode(self, phrase, text= False):
@@ -199,19 +199,28 @@ class Embedding(Tokenizer):
     def __init__(self):
         # self.weight = 
         self.d_model = 512
-        self.w = [default_rng(10 + idx).random((1, self.d_model)) * 0.01 for idx in range(len(self.encode('ciao')))] 
+        self.w = [default_rng(10 + idx).random((1, self.d_model)) * math.sqrt(self.d_model) for idx in range(len(self.encode('ciao')))] 
 
-    def tokenInputVector(self):
-        vectors = [default_rng(1 + idx).random((1, self.d_model)) * 0.01 for idx in range(len(self.encode('ciao')))]
-        return vectors
-
+    # visto che nell'architettura del transformers il modello processa tutti i token tutti insieme e non uno alla volta come i modelli
+    # RRM deve sapere dove le parole si trovano nella frase  
+    def positionEncodig(self):
+        vectorTokens = []
+        for token in range(len(self.encode('ciao'))):
+            vector = []
+            for i in range(512):
+                value = 0
+                if i % 2 == 0: value = math.sin(token / 10000**(2 * (i // 2) / self.d_model))
+                else: value = math.cos(token / 10000**(2 * (i // 2) / self.d_model))
+                vector.append(value)
+            vectorTokens.append(vector)
+        return vectorTokens
 class Transformers(Tokenizer):
     def __init__(self):
         super().__init__()
 
     def encoder(self):
-        
         pass
+
         # print(self.distribution)
         # print(self.tokenInputVector())
 
@@ -220,8 +229,7 @@ h = MultiHeadAttention()
 
 f = FFN()
 e = Embedding()
-print(e.tokenInputVector())
-# print(f.linearTransNetwork())
+print(e.positionEncodig())
 # print(h.multiHead().shape)
 # t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
 # print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
