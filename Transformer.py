@@ -201,17 +201,23 @@ class Embedding(Tokenizer):
         self.d_model = 512
         self.w = [default_rng(10 + idx).random((1, self.d_model)) * math.sqrt(self.d_model) for idx in range(len(self.encode('ciao')))] 
 
-    # visto che nell'architettura del transformers il modello processa tutti i token tutti insieme e non uno alla volta come i modelli
+    # visto che nell'architettura del transformers il modello processa tutti
+    #  i token tutti insieme e non uno alla volta come i modelli
     # RRM deve sapere dove le parole si trovano nella frase  
     def positionEncodig(self):
         vectorTokens = []
         for token in range(len(self.encode('ciao'))):
-            vector = []
-            for i in range(512):
-                value = 0
-                if i % 2 == 0: value = math.sin(token / 10000**(2 * (i // 2) / self.d_model))
-                else: value = math.cos(token / 10000**(2 * (i // 2) / self.d_model))
-                vector.append(value)
+            vector = [] # vettore per ogni token 
+            for i in range(self.d_model // 2):
+                # i non consiste nella posizione del vettore ma sarebbe il numero
+                # della coppia e visto che il vettore è lungo d_model
+                # allora si fa diviso due essendo che si inseriscono due evalori 
+                valueSin = math.sin(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per pari 
+                vector.append(valueSin)
+                
+                valueCos = math.cos(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per dispari 
+                vector.append(valueCos)
+
             vectorTokens.append(vector)
         return vectorTokens
 class Transformers(Tokenizer):
