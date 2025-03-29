@@ -202,7 +202,7 @@ class Embedding(Tokenizer):
         self.w = [default_rng(10 + idx).random((1, self.d_model)) * math.sqrt(self.d_model) for idx in range(len(self.encode('ciao')))] 
 
     # visto che nell'architettura del transformers il modello processa tutti
-    #  i token tutti insieme e non uno alla volta come i modelli
+    # i token tutti insieme e non uno alla volta come i modelli
     # RRM deve sapere dove le parole si trovano nella frase  
     def positionEncodig(self):
         vectorTokens = []
@@ -214,7 +214,7 @@ class Embedding(Tokenizer):
                 # allora si fa diviso due essendo che si inseriscono due evalori 
                 valueSin = math.sin(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per pari 
                 vector.append(valueSin)
-                
+
                 valueCos = math.cos(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per dispari 
                 vector.append(valueCos)
 
@@ -243,4 +243,27 @@ print(e.positionEncodig())
 # print(t.decode([76, 500], True))
 
         
-        
+#The third is the path length between long-range dependencies in the network. Learning long-range
+#dependencies is a key challenge in many sequence transduction tasks. One key factor affecting the
+#ability to learn such dependencies is the length of the paths forward and backward signals have to
+#traverse in the network. The shorter these paths between any combination of positions in the input
+#and output sequences, the easier it is to learn long-range dependencies
+
+# il paper sostiene che più la sequenza di parole è lunga e più il modello tende a sbagliare/dimenticare 
+# e quindi con architetture come i trasnformer non c'è bisogno di saltare tra parole perchè processa l'intera 
+# frase e quindi deve fare un solo balzo rispetto ad altre architetture 
+
+# As noted in Table 1, a self-attention layer connects all positions with a constant number of sequentially
+# executed operations, whereas a recurrent layer requires O(n) sequential operations
+
+#To improve computational performance for tasks involving
+#very long sequences, self-attention could be restricted to considering only a neighborhood of size r in
+#the input sequence
+
+# es. 
+# "Il":     [x, x, 0, 0, 0]
+# "cane":   [x, x, x, 0, 0]
+# "corre":  [0, x, x, x, 0]
+# "veloce": [0, 0, x, x, x]
+# "ora":    [0, 0, 0, x, x]
+# qua ogni token guarderebbe solo i token che ha in parte e quindi con r uguale a 2
