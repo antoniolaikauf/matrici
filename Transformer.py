@@ -116,6 +116,8 @@ class MultiHeadAttention:
         self.d_model = 512
         self.seq_length = seq_length
         # initialization of key, value, query 
+        # TODO da sistemare essendo che le query, value e key sono create dalla moltiplicazione del vettore con  
+        # dei vettori di dimensioni 512x512
         self.k = default_rng(42).random((self.seq_length,self.d_model)) 
         self.v = default_rng(41).random((self.seq_length,self.d_model))
         self.q = default_rng(40).random((self.seq_length,self.d_model))

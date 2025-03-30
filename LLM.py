@@ -32,7 +32,8 @@
 #     else: input_text = input()
 
 
-# Load model directly
+#avere una gpu cosi da scaricare modelli migliori 
+# Load model directly 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 tokenizer = AutoTokenizer.from_pretrained("perplexity-ai/r1-1776", trust_remote_code=True)
