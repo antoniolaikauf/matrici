@@ -111,31 +111,25 @@ class Tokenizer:
 
 
 class MultiHeadAttention:
-    def __init__(self, seq_length = 6):
+    def __init__(self, tokensVector):
         # length of each token vector 
         self.d_model = 512
-        self.seq_length = seq_length
-        # initialization of key, value, query 
-        # TODO da sistemare essendo che le query, value e key sono create dalla moltiplicazione del vettore con  
-        # dei vettori di dimensioni 512x512
-        self.k = default_rng(42).random((self.seq_length,self.d_model)) 
-        self.v = default_rng(41).random((self.seq_length,self.d_model))
-        self.q = default_rng(40).random((self.seq_length,self.d_model))
+        self.tokensVector = tokensVector
         # number of head
         self.headNumber = self.d_model // 64
         self.d_k = self.d_model // self.headNumber
         #weith of every query, value , key for every head
-        self.w_q = [default_rng(10 + x).random((self.d_model, self.d_k)) * 0.01 for x in range(self.headNumber)]
-        self.w_k = [default_rng(20 + x).random((self.d_model, self.d_k)) * 0.01 for x in range(self.headNumber)]
-        self.w_v = [default_rng(30 + x).random((self.d_model, self.d_k)) * 0.01 for x in range(self.headNumber)]
+        self.w_q = [default_rng(10 + x).random((self.d_model, self.d_k)) * 0.001 for x in range(self.headNumber)]
+        self.w_k = [default_rng(20 + x).random((self.d_model, self.d_k)) * 0.001 for x in range(self.headNumber)]
+        self.w_v = [default_rng(30 + x).random((self.d_model, self.d_k)) * 0.001 for x in range(self.headNumber)]
 
     def multiHead(self):
         heads = []
         for head in range(self.headNumber):
-            # we divide the query, value, key in chunk of 6 x 64
-            wk = np.dot(self.k, self.w_k[head]) # dimension 6 x 64
-            wv = np.dot(self.v, self.w_v[head]) # dimension 6 x 64
-            wq = np.dot(self.q, self.w_q[head]) # dimension 6 x 64
+            # those are the key, value and query of every token but with dimension len of vectorToken x 512 
+            wk = np.dot(self.tokensVector, self.w_k[head]) 
+            wv = np.dot(self.tokensVector, self.w_v[head]) 
+            wq = np.dot(self.tokensVector, self.w_q[head]) 
             h = self.head(wk, wv, wq) # return 64 token of every words so an vector of 6x64        
             heads.append(h)
 
@@ -161,19 +155,21 @@ class MultiHeadAttention:
         mol = np.dot(q , np.transpose(k))
         div = mol / math.sqrt(self.d_k)
         # print(f"softmax: {self.softmax(div)}")
-        Smax = np.dot(self.softmax(div), v)        
+        Smax = np.dot(self.softmax(div), v)      
+        # the value of Smax if sum are equal to 1, thanks to the softamx function   
         return Smax
 
 #feed foward
-class  FFN(MultiHeadAttention):
-    def __init__(self):
-        super().__init__()
+class  FFN:
+    def __init__(self, multiHead, d_model):
         # matrici di dimensioni 512x2048 per prima trasformazione lineare
-        self.w = [default_rng(10 + x).random((self.d_model, self.d_model * 4)) * 0.01 for x in range(self.seq_length)]
-        self.b= [default_rng(20 + x).random((1, self.d_model * 4)) * 0.01 for x in range(self.seq_length)]
+        self.w = [default_rng(10 + x).random((d_model, d_model * 4)) * 0.001 for x in range(len(multiHead))]
+        self.b= [default_rng(20 + x).random((1, d_model * 4)) * 0.001 for x in range(len(multiHead))]
         # matrici di dimensioni 2048x512 per seconda trasformazione lineare cosi da riportare l'output a 512
-        self.b2= [default_rng(20 + x).random((1, self.d_model)) * 0.01 for x in range(self.seq_length)]
-        self.w2 = [default_rng(10 + x).random((self.d_model * 4, self.d_model)) * 0.01 for x in range(self.seq_length)]
+        self.b2= [default_rng(20 + x).random((1, d_model)) * 0.001 for x in range(len(multiHead))]
+        self.w2 = [default_rng(10 + x).random((d_model * 4, d_model)) * 0.001 for x in range(len(multiHead))]
+
+        self.multihead = multiHead
         
     def Relu(self, x):
         for index, value in enumerate(x[0]): 
@@ -182,7 +178,7 @@ class  FFN(MultiHeadAttention):
 
     def  linearTransNetwork(self):
         output = []
-        for index, value in enumerate(self.multiHead()):
+        for index, value in enumerate(self.multihead):
             # value*W + b
             mul = np.dot(value, self.w[index])
             add = np.add(mul, self.b[index])
@@ -197,18 +193,18 @@ class  FFN(MultiHeadAttention):
         return output
 
 
-class Embedding(Tokenizer):
-    def __init__(self):
-        # self.weight = 
+class Embedding:
+    def __init__(self, tokens):
         self.d_model = 512
-        self.w = [default_rng(10 + idx).random((1, self.d_model)) * math.sqrt(self.d_model) for idx in range(len(self.encode('ciao')))] 
+        self.tokens = tokens
+        self.w = [default_rng(10 + idx).random((1, self.d_model)) * math.sqrt(self.d_model) for idx in range(len(self.tokens))] 
 
     # visto che nell'architettura del transformers il modello processa tutti
     # i token tutti insieme e non uno alla volta come i modelli
     # RRM deve sapere dove le parole si trovano nella frase  
     def positionEncodig(self):
         vectorTokens = []
-        for token in range(len(self.encode('ciao'))):
+        for token in range(len(self.tokens)):
             vector = [] # vettore per ogni token 
             for i in range(self.d_model // 2):
                 # i non consiste nella posizione del vettore ma sarebbe il numero
@@ -222,27 +218,25 @@ class Embedding(Tokenizer):
 
             vectorTokens.append(vector)
         return vectorTokens
-class Transformers(Tokenizer):
+class Transformers:
     def __init__(self):
-        super().__init__()
+        self.d_model = 512
+        self.tokenizer = Tokenizer()
 
     def encoder(self):
-        pass
+        tokens = self.tokenizer.encode('ciao')
+        
+        embedding = Embedding(tokens)
+        
+        multiHeadAttention = MultiHeadAttention(embedding.positionEncodig())
+        ffn = FFN(multiHeadAttention.multiHead(), self.d_model)
+        return ffn.linearTransNetwork()
 
-        # print(self.distribution)
-        # print(self.tokenInputVector())
 
-t =Transformers()
-h = MultiHeadAttention()
+t = Transformers()
 
-f = FFN()
-e = Embedding()
-print(e.positionEncodig())
-# print(h.multiHead().shape)
-# t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu')
-# print(t.decode(t.encode('fffffffffffffffffffuuuuuuuuuuuuuuuu'), True))
-# t.mergeFile()
-# print(t.decode([76, 500], True))
+# print(t.encoder())
+t.encoder()
 
         
 #The third is the path length between long-range dependencies in the network. Learning long-range
