@@ -85,3 +85,65 @@ Si può notare che la funzione sigmod è una fuznione più 'levigata' rispetto a
 Queste due funzioni sono chiamate activation function 
 (Una funzione di attivazione in una rete neurale è una funzione matematica che determina se un neurone deve essere attivato in base ai suoi segnali di ingresso.)
   
+
+La rete neurale è composta da input layer in cui ci sono gli input x1, x2 ,x3. L'hidden layer significas 'non un input e non un output', invece l'output layer è lo stato in cui fuoriesce l'output <br>
+
+![](forma.png)
+
+Una rete in cui l'output del layer viene usato come input per il prossimo layer viene chiamato **feedFoward** 
+
+<br> <br>
+
+questa rete da un output in binario della rappresentazione di un numero 
+es. 2 si illuminano 0010
+
+![](reteWeight.png)
+
+
+
+
+
+
+In questo caso, si vuole scegliere un set di pesi (weights) e bias tale da illuminare i bit necessari per rappresentare il numero. Nel vecchio output layer, si illumina un neurone in base all’input: se l’input è 2, si illumina il terzo neurone e la sequenza diventa [0, 0, 0.99, 0, 0, 0, 0, 0, 0, 0].
+Per scegliere i pesi, si fa in modo che siano abbastanza grandi da far sì che la funzione sigmoide restituisca 0.99 (e non 0.01). Ad esempio:  
+- Il primo neurone, che rappresenta il bit più significativo, ha pesi [0, 0, 0, 0, 0, 0, 0, 0, 10, 10];  
+
+- Il secondo ha [0, 0, 0, 0, 10, 10, 10, 10, 0, 0];  
+
+- Il terzo ha [0, 0, 10, 10, 0, 0, 10, 10, 0, 0]; 
+
+- Il quarto ha [0, 10, 0, 10, 0, 10, 0, 10, 0, 10].
+
+Questo avviene perché, per esempio, il primo neurone deve illuminarsi solo quando l’input è 8 o 9, dato che le loro rappresentazioni binarie sono 1000 (8) e 1001 (9). La bias, invece, viene scelta uguale a -5. <br>
+Con un input pari a 2, si dovrebbe illuminare il terzo neurone del quarto strato. Nei pesi del terzo neurone, [0, 0, 10, 10, 0, 0, 10, 10, 0, 0], si nota che la posizione 2 (che corrisponde alla cifra 2) ha un peso di 10. Così, quando si calcola la somma pesata con l’equazione xi*wi + b
+, si moltiplica [0, 0, 0.99, 0, 0, 0, 0, 0, 0, 0] per i pesi del terzo neurone [0, 0, 10, 10, 0, 0, 10, 10, 0, 0]. Il risultato è 10⋅0.99+(−5)=9.9−5=4.9.<br>
+Inserendo 4.9 nella funzione sigmoide, si ottiene circa 0.99, permettendo di illuminare il bit 3. Per gli altri neuroni, invece, il risultato è 0.
+Ad esempio, moltiplicando [0, 0, 0.99, 0, 0, 0, 0, 0, 0, 0] per i pesi del secondo neurone [0, 0, 0, 0, 10, 10, 10, 10, 0, 0], si ottiene 0; quindi z=0+(−5)=−5z = 0 + (-5) = -5z = 0 + (-5) = -5
+. Messo nella sigmoide, -5 restituisce circa 0.01, quindi il secondo neurone non si illumina. Lo stesso vale per gli altri neuroni.
+
+Ovviamente il processo di trovare le weight e le bias avviene tramite una funzione 
+
+![](constFunction.png)
+
+- w sono le weight 
+- b è la bias
+- n sono il totale di inpunt per il training
+- a è l'output per ogni xn quindi nel contesto di pirma sarebbe a=[0.01, 0.01, 0.99, 0.01]
+- y(x) è il valore che il modello dovrebbe produrre per un dato input ( x ) 
+- la somma è su tutti gli input nel trainig set 
+
+- || ∣∣y(x)−a∣∣<sup>2</sup>=
+(y(x)1−a1)<sup>2</sup>+(y(x)2−a2)<sup>2</sup>+...+ (y(x)n−an)<sup>2</sup>
+
+
+se questa funzione raggiunge presso che 0 allora si sono trovate un ottimo set di bias e weight se invece raggiunge un numero grande allora l'algoritmo non sta andando bene questa perchè nella loss function più il valore è basso e migliore è il nostro algoritmo.
+Questo perchè più i valori di a che sarebbe l'output del nostro modello e i valori di f(x) sono uguali la funzione tenderà a 0 
+
+es. y(x)=[0, 0, 1, 0],a=[0.01, 0.01, 0.99, 0.01] <br>
+y(x) − a=[0 − 0.01, 0 − 0.01, 1 − 0.99 , 0 − 0.01]=[−0.01, −0.01, 0.01, −0.01] <br>
+∣∣y(x)−a∣∣<sup>2</sup>=(−0.01)<sup>2</sup>+(−0.01)<sup>2</sup>+(0.01)<sup>2</sup>+(−0.01)<sup>2</sup>=4 * (0.01)<sup>2</sup>=0.0004
+
+
+
+
+
