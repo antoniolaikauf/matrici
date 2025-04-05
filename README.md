@@ -41,3 +41,47 @@ ci sono delle proprietà dei numeri che si utilizzano anche con le matrici
 # IMMAGINE VETTORI 
 
 ![](vector.png)
+
+
+# LIBRO
+
+```markdown
+modello tipo **perceptrons**/**percettore** prende vari input x1, x2, x3 e produce un singolo output, per calcolare l'output si introducono i **weights**, l'output di questa rete neurale è 0 o 1 ed è determinata se la somma delle weight nè maggiore di una threshold.
+al cambiare delle weight e della treshold possiamo ottenere diversi modelli di processo decisionale
+```
+![](imageModel.png)
+
+[es. vedere libro link](http://neuralnetworksanddeeplearning.com/chap1.html)
+
+ora la nostra equazione può essere riscritta come 
+
+![](fomulaModello.png)
+
+in cui tutti e i tre parametri sono vettori la x di lunghezza 1 x d_model (che d_model è 512) nel paper transformers la W sarà di 512 x 2048 e la bias di 1 x 2048 (queste lunghezze sono solo nella trasformazione lineare perchè nella seconda bisogna trasformare l'output di questa eqauzione a dimensioni di d_model)
+
+quando la bias è molto alta è più facile che l'output sia 1 <br><br><br><br>
+
+
+![](esempio.png)
+
+
+per permettere alla rete di migliorare bisognerebbe fare piccoli cambiamenti alle weight e alle bias cosic he l'output cambi. <br> Ma bisogna stare attenti essendo che un cambiamento delle bias o weight potrebbe cambiare il cambiamennto della rete neurale. <br>
+Per evitare questo problema allora si introduce un nuovo neurone chiamato **sigmoid neuron** che assomiglia molto al percettore ma gli input possono avere valori tra 0 e 1 invece di 0 o 1 come nel percettore e l'output non è 0 o 1 **ma un valore tra 0 e 1** <br>
+
+![](sigmodFunction.png) <br>
+
+![](textSigmodFunction.png)
+
+la sigmod function in alcuni dsa l'output tra un valore 0 e 1 e quando z tende ad essere un valore negativo molto grande l'output della funzione sarà 1 invece quando la z assume un valore positivo molto grande allora l'output della funzione sarà 0. <br>
+In questi due casi la funzione assomiglia molto al percettrone.
+
+### Forme Funzioni
+
+![](functionForm.png)
+
+
+Si può notare che la funzione sigmod è una fuznione più 'levigata' rispetto al percettrone. <br>
+
+Queste due funzioni sono chiamate activation function 
+(Una funzione di attivazione in una rete neurale è una funzione matematica che determina se un neurone deve essere attivato in base ai suoi segnali di ingresso.)
+  
