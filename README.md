@@ -8,12 +8,12 @@ Per selezionare un elemento dentro alla matrice si fa riferimento A[i,j] es A[1,
 ### ADDIZIONI CON MATRICI 
 Per eseguire un addizioni con matrici le loro dimensioni devono essere uguali 
 
-![](addition-of-matrices-3x3-1625855167-515495451.png)
+![](image/addMatrix.png)
 
 ### MOLTIPLICAZIONE SCALARE
 una moltiplicazione tra un valore c e la matrice A è calcolata moltiplicando tutti gli elementi con c 
 
-![](image.png)
+![](image/product.png)
 
 ### SOTTRAZIONE 
 la sottrazione tra due matrici è come la addizione ma bisogna moltiplicare i valori di una matrice per -1
@@ -21,12 +21,12 @@ la sottrazione tra due matrici è come la addizione ma bisogna moltiplicare i va
 ### MOLTIPLICAZIONE CON MATRICI
 una moltiplicazione tra matrici si può avere solo se il numero di colonne della prima matrice è uguale al numero di row della seconda matrice 
 
-![](esempio-prodotto-matrici-3185026233.gif)
+![](image/product2.gif)
 
 ### TRASPOSIZIONE 
 Una trasposizione di una matrice A di dimensioni m x n è formata dalla trasformazione delle row in colonne e vice versa 
 
-![](Trasposizione.png)
+![](image/Trasposizione.png)
 
 ci sono delle proprietà dei numeri che si utilizzano anche con le matrici 
 
@@ -40,7 +40,7 @@ ci sono delle proprietà dei numeri che si utilizzano anche con le matrici
 
 # IMMAGINE VETTORI 
 
-![](vector.png)
+![](image/vettore.png)
 
 
 # LIBRO
@@ -49,35 +49,35 @@ ci sono delle proprietà dei numeri che si utilizzano anche con le matrici
 modello tipo **perceptrons**/**percettore** prende vari input x1, x2, x3 e produce un singolo output, per calcolare l'output si introducono i **weights**, l'output di questa rete neurale è 0 o 1 ed è determinata se la somma delle weight nè maggiore di una threshold.
 al cambiare delle weight e della treshold possiamo ottenere diversi modelli di processo decisionale
 ```
-![](imageModel.png)
+![](image/percettore.png)
 
 [es. vedere libro link](http://neuralnetworksanddeeplearning.com/chap1.html)
 
 ora la nostra equazione può essere riscritta come 
 
-![](fomulaModello.png)
+![](image/percettore2.png)
 
 in cui tutti e i tre parametri sono vettori la x di lunghezza 1 x d_model (che d_model è 512) nel paper transformers la W sarà di 512 x 2048 e la bias di 1 x 2048 (queste lunghezze sono solo nella trasformazione lineare perchè nella seconda bisogna trasformare l'output di questa eqauzione a dimensioni di d_model)
 
 quando la bias è molto alta è più facile che l'output sia 1 <br><br><br><br>
 
 
-![](esempio.png)
+![](image/percettoreEsempio.png)
 
 
 per permettere alla rete di migliorare bisognerebbe fare piccoli cambiamenti alle weight e alle bias cosic he l'output cambi. <br> Ma bisogna stare attenti essendo che un cambiamento delle bias o weight potrebbe cambiare il cambiamennto della rete neurale. <br>
 Per evitare questo problema allora si introduce un nuovo neurone chiamato **sigmoid neuron** che assomiglia molto al percettore ma gli input possono avere valori tra 0 e 1 invece di 0 o 1 come nel percettore e l'output non è 0 o 1 **ma un valore tra 0 e 1** <br>
 
-![](sigmodFunction.png) <br>
+![](image/sigmodFunction.png) <br>
 
-![](textSigmodFunction.png)
+![](image/textSigmodFunction.png)
 
 la sigmod function in alcuni dsa l'output tra un valore 0 e 1 e quando z tende ad essere un valore negativo molto grande l'output della funzione sarà 1 invece quando la z assume un valore positivo molto grande allora l'output della funzione sarà 0. <br>
 In questi due casi la funzione assomiglia molto al percettrone.
 
 ### Forme Funzioni
 
-![](functionForm.png)
+![](image/functionShape.png)
 
 
 Si può notare che la funzione sigmod è una fuznione più 'levigata' rispetto al percettrone. <br>
@@ -88,7 +88,7 @@ Queste due funzioni sono chiamate activation function
 
 La rete neurale è composta da input layer in cui ci sono gli input x1, x2 ,x3. L'hidden layer significas 'non un input e non un output', invece l'output layer è lo stato in cui fuoriesce l'output <br>
 
-![](forma.png)
+![](image/neuralNetwork.png)
 
 Una rete in cui l'output del layer viene usato come input per il prossimo layer viene chiamato **feedFoward** 
 
@@ -97,12 +97,7 @@ Una rete in cui l'output del layer viene usato come input per il prossimo layer 
 questa rete da un output in binario della rappresentazione di un numero 
 es. 2 si illuminano 0010
 
-![](reteWeight.png)
-
-
-
-
-
+![](image/neuralNetwork2.png)
 
 In questo caso, si vuole scegliere un set di pesi (weights) e bias tale da illuminare i bit necessari per rappresentare il numero. Nel vecchio output layer, si illumina un neurone in base all’input: se l’input è 2, si illumina il terzo neurone e la sequenza diventa [0, 0, 0.99, 0, 0, 0, 0, 0, 0, 0].
 Per scegliere i pesi, si fa in modo che siano abbastanza grandi da far sì che la funzione sigmoide restituisca 0.99 (e non 0.01). Ad esempio:  
@@ -123,7 +118,7 @@ Ad esempio, moltiplicando [0, 0, 0.99, 0, 0, 0, 0, 0, 0, 0] per i pesi del secon
 
 Ovviamente il processo di trovare le weight e le bias avviene tramite una funzione 
 
-![](constFunction.png)
+![](image/constFunction.png)
 
 - w sono le weight 
 - b è la bias
@@ -132,7 +127,7 @@ Ovviamente il processo di trovare le weight e le bias avviene tramite una funzio
 - y(x) è il valore che il modello dovrebbe produrre per un dato input ( x ) 
 - la somma è su tutti gli input nel trainig set 
 
-- || ∣∣y(x)−a∣∣<sup>2</sup>=
+- ∣∣y(x)−a∣∣<sup>2</sup>=
 (y(x)1−a1)<sup>2</sup>+(y(x)2−a2)<sup>2</sup>+...+ (y(x)n−an)<sup>2</sup>
 
 
@@ -143,7 +138,20 @@ es. y(x)=[0, 0, 1, 0],a=[0.01, 0.01, 0.99, 0.01] <br>
 y(x) − a=[0 − 0.01, 0 − 0.01, 1 − 0.99 , 0 − 0.01]=[−0.01, −0.01, 0.01, −0.01] <br>
 ∣∣y(x)−a∣∣<sup>2</sup>=(−0.01)<sup>2</sup>+(−0.01)<sup>2</sup>+(0.01)<sup>2</sup>+(−0.01)<sup>2</sup>=4 * (0.01)<sup>2</sup>=0.0004
 
+La tecnica **gradian descent** viene usata per trovare weight e bias che fanno ottenere una loss functioin bassa 
 
+per capire come cambia la loss function se is modificano i parametri si utilizza questa equazione, quindi di darà una stima di quanto cambierà la loss se aggiorni i pesi  <br>
+![](image/funzioneCambio.png)
 
+- Rappresenta il cambiamento approssimativo della funzione di costo ( C ) quando modifichi i parametri v1 e v2  di una quantità Δv1 e Δv2 <br>
+quindi il gradiente (∇C) sarebbe $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$  
+- Δv1 Δv2 sono i passi che si fanno per far si che si 'scenda' e quindi si ottenga una loss function con un valore sempre più piccolo 
+questi sono calcolati in base al learning rate <br>
+Δv1 = $\frac{∂C}{∂v1}$ * -η,  Δv2 = $\frac{∂C}{∂v2}$ * -η
 
+ovviamente si deve andare nella direzione −∇C perchè se no la loss aumenterebbe 
 
+- prima si calcola la loss function C
+-  una volta calcolato si usa l'equazione ΔC in cui ci dice di quanto dovrebbe diminuire l'errore con il nuovo set di weight i bias 
+- si calcola ancora una volta C con le weight e bias modificate del passaggio 2 
+- si verifica che il pssaggio tre sia corretto facendo il passaggio 1 meno il 3 e dovrebbe risultare il risultato del passaggio 2 
