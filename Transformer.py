@@ -154,7 +154,7 @@ class MultiHeadAttention:
     def head(self, k, v, q):
         mol = np.dot(q , np.transpose(k))
         div = mol / math.sqrt(self.d_k)
-        # print(f"softmax: {self.softmax(div)}")
+        # print(f"softmax: {self.softmax(div)}\n")
         Smax = np.dot(self.softmax(div), v)      
         # the value of Smax if sum are equal to 1, thanks to the softamx function   
         return Smax
@@ -236,7 +236,7 @@ class Transformers:
 t = Transformers()
 
 # print(t.encoder())
-t.encoder()
+print(t.encoder())
 
         
 #The third is the path length between long-range dependencies in the network. Learning long-range

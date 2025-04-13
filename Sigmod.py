@@ -1,7 +1,7 @@
 import math
 
 #------------------------------------
-# VALORE GRANDE negativo
+# VALORE GRANDE NEGATIVO
 #------------------------------------
 
 w = -20

@@ -128,7 +128,7 @@ Ovviamente il processo di trovare le weight e le bias avviene tramite una funzio
 - la somma è su tutti gli input nel trainig set 
 
 - ∣∣y(x)−a∣∣<sup>2</sup>=
-(y(x)1−a1)<sup>2</sup>+(y(x)2−a2)<sup>2</sup>+...+ (y(x)n−an)<sup>2</sup>
+(y(x)1−a1)<sup>2</sup>+(y(x)2−a2)<sup>2</sup>+...+ (y(x)−ax)<sup>2</sup>
 
 
 se questa funzione raggiunge presso che 0 allora si sono trovate un ottimo set di bias e weight se invece raggiunge un numero grande allora l'algoritmo non sta andando bene questa perchè nella loss function più il valore è basso e migliore è il nostro algoritmo.
@@ -140,14 +140,20 @@ y(x) − a=[0 − 0.01, 0 − 0.01, 1 − 0.99 , 0 − 0.01]=[−0.01, −0.01, 
 
 La tecnica **gradian descent** viene usata per trovare weight e bias che fanno ottenere una loss functioin bassa 
 
-per capire come cambia la loss function se is modificano i parametri si utilizza questa equazione, quindi di darà una stima di quanto cambierà la loss se aggiorni i pesi  <br>
+per capire come cambia la loss function se is modificano i parametri si utilizza questa equazione, quindi dirà una stima di quanto cambierà la loss se aggiorni i pesi  <br>
 ![](image/funzioneCambio.png)
 
 - Rappresenta il cambiamento approssimativo della funzione di costo ( C ) quando modifichi i parametri v1 e v2  di una quantità Δv1 e Δv2 <br>
 quindi il gradiente (∇C) sarebbe $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$  
-- Δv1 Δv2 sono i passi che si fanno per far si che si 'scenda' e quindi si ottenga una loss function con un valore sempre più piccolo 
-questi sono calcolati in base al learning rate <br>
-Δv1 = $\frac{∂C}{∂v1}$ * -η,  Δv2 = $\frac{∂C}{∂v2}$ * -η
+- Δv1 Δv2 sono i passi che si fanno per far si che si 'scenda' e quindi si ottenga una loss function con un valore sempre più piccolo <br>
+Δv1 = $\frac{∂C}{∂v1}$ * -η  Δv2 = $\frac{∂C}{∂v2}$ * -η
+- -η sarebbe il learning rate (è un valore piccolo) inoltre è il learning rate che dice di quando bisogna 'scendere' nella funzione della gradiant descent. 
+Se il learning rate è troppo piccolo ci vorranno più step per raggiungere il minimo, invece se il learning rate è troppo grande si possono avere **divergenze** in cui l'algoritmo non raggiunge il minimo ma, 
+
+quindi alla fine l'eqauzione si può riscrivere come <br><br>
+![](image/gradianteEquazione.png)<br>
+ in cui ΔC consiste nel gradiante ∇C ( sarebbe $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$  ) moltiplicato con il prodotto tra il gradiante ∇C e il learning rate 
+
 
 ovviamente si deve andare nella direzione −∇C perchè se no la loss aumenterebbe 
 

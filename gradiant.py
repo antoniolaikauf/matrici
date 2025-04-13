@@ -4,8 +4,8 @@ from numpy.random import default_rng
 
 class GradiantDescent:
     def __init__(self):
-        self.f = [0, 0, 1, 0]
-        self.output = [0 ,0, 0, 0]
+        self.f = [0, 0, 1, 0] # outpput corretto 
+        self.output = [0 ,0, 0, 0] # output del modello 
         self.hiddenLayer = [0.2, 0.4, -0.3, 0.05, 0.05]
         self.weight= default_rng(10).random((5,4))
         self.ln = 0.01
@@ -32,7 +32,7 @@ class GradiantDescent:
         # queste sono le due derivate dall'equazione della loss function 
 
         # ∂C/∂Q = -1/m * ∑(f_j - output_j) rispetto a Q
-        # ∂C/∂W = -1/m * ∑(f_j - output_j) * hiddenLayer_i rispetto a Q rispetto a W
+        # ∂C/∂W = -1/m * ∑(f_j - output_j) * hiddenLayer_i rispetto a W
 
         m = len(self.f)
         for idx in range(m):
@@ -41,7 +41,8 @@ class GradiantDescent:
 
             for i in range(self.n):
                 gradW[i][idx] = error * self.hiddenLayer[i]
-
+            
+        # ovviamente per scendere biosgna andare nella direzione opposta di ∂C/∂Q e quindi bisogna fare -∂C/∂Q
         # ∂C/∂Q
         gradQ = -gradQ / m
         # ∂C/∂W
@@ -72,7 +73,7 @@ class GradiantDescent:
 
 G = GradiantDescent()
 
-for x in range(10):
+for x in range(50):
     G.process()
 
 
