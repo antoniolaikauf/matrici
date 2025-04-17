@@ -161,3 +161,45 @@ ovviamente si deve andare nella direzione −∇C perchè se no la loss aumenter
 -  una volta calcolato si usa l'equazione ΔC in cui ci dice di quanto dovrebbe diminuire l'errore con il nuovo set di weight i bias 
 - si calcola ancora una volta C con le weight e bias modificate del passaggio 2 
 - si verifica che il pssaggio tre sia corretto facendo il passaggio 1 meno il 3 e dovrebbe risultare il risultato del passaggio 2 
+
+**l'idea principale del gradiant decsent è quella di trtovare le weight e le bias che  permettono di trovare il minimo nella loss function**
+
+quindi le nuove weight si calcolano facendo la differenza tra le weight attuali - lo step che in questo caso rappresenterebbe -η∇C. <br><br>
+![](image/newParameters.png)
+
+### stochastic gradient descent
+
+volendo se il set di input è troppo grande si sceglie un batch di grandezza minore rispetto al dataset e lo si allena su questo, ovviamente il dataset dovrebbe avere molti esempi per far si che funzioni questo <br> <br>
+![](image/batch.png)
+<br>
+m consiste nel batch e la grandezza di m deve risultare minore di n. m < n. <br>
+Una cosa obbligatoria da fare è che gli esempi che sono utilizzati per creare m devono essere scelti randomicamentre dal dataset. <br>
+Il stochastic gradient descent funziona grazie alla **legge dei grandi numeri** 
+
+```markdown
+Secondo la legge dei grandi numeri è ragionevolmente sicuro che la media, che determiniamo a partire da un numero sufficiente di campioni, sia sufficientemente vicina alla media vera, ovvero quella calcolabile teoricamente
+```
+
+ovviamente questo deve avvenure più volte in modo tale che le weight e le bias vengano aggiornate e una volta finito il dataset completo si rinizia da 0 ma senza usare gli stessi epoch utilizzati precedentemente. <br>
+es [1,2,3,4,5,6] dataset, primo batch [3,5] secondo batch [6,1] terzo batch [4,2]  e quersto processo viene chiamato epoch
+N.B in un ciclo possono uscire più volte gli stessi esempi essendo che è stocastico e quindi randomico es [1,2,3,4,5,6] dataset, primo epoch [3,5] secondo [6,1] terzo[4,6] può succedere 
+
+Ovviamente i vantaggi del **stochastic gradient descent** è che è più veloce rispetto al **gradient descent** se il dataset è grande 
+e anche gli aggiornamenti dei parametri delle weight e bias avviene più veloce essendo che vengono aggiornati tot alla volta e non tutti insieme e se si processano milioni o anche migliardi di parametri in una volta sola sarebbe difficile per l'hardware caricarli e processarli tutti in uno.
+
+GD:<br>
+Calcoli il gradiente su tutte le 1.000.000 immagini.
+
+se un aggiornamento richieda 600 secondi (10 minuti) a causa del volume di dati.
+
+Dopo 10 epoche (10 aggiornamenti), hai speso  10 × 600= 6.000 secondi (100 minuti).
+<br><br><br>
+SGD (batch size = 32):<br>
+Ogni mini-batch (32 immagini) richiede 0,02 secondi.
+
+un epoch ha $\prod{1.000.000}{32}$  = 31.250 che sarebbero la quantità dei mini-batch, 
+quindi 31.250 × 0,02 = 625 secondi che sarebbero 10 minuti
+
+Ma il modello potrebbe raggiungere una buona loss dopo solo 5 epoche, quindi 5x625 = 3125 secondi che in minuti risulterebbe 52 
+
+**si può presuppore che con SGD si ottenga una buona loss function solo dopo 5 epoch perchè con sdg si tropva più velocemenete il minimo della loss function**
