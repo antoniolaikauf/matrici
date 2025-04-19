@@ -6,3 +6,20 @@
 # un output layer di 10 neuroni in cui se si attiva il primo neurone
 # allora la rete pensa che l'input sia il numero 0, se si illumina il 2
 # allora la rete pensa che il numero sia il 1
+
+import numpy as np
+
+class Network(object):
+    # sizes rapresenterebbe i neuroni che appartengono ad ogni layer [2, 3, 4] questo ha 3 layer in cui il primo strato ha 2 neuroni il secondo 
+    # 3 e il terzo ne ha 4  
+    def __init__(self, sizes):
+        self.size = sizes
+        self.num_layer = len(sizes)
+        self.bias = [np.random.randn(y, 1) for y in sizes[1:]] # inizializzazione bias
+        self.weights = [np.random.randn(sizes[x + 1], sizes[x]) for x in range(len(sizes) - 1)] # ializzazione weight
+        # self.weights = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]
+
+
+net = Network([2, 3, 4])
+print(net.bias)
+print(net.weights)
