@@ -25,6 +25,13 @@ class GradiantDescent:
         return 1 / (2 * self.n) * sum(calc)
 
     def gradiantDescent(self):
+
+        '''
+          calcolo dei gradianti viene fatto dalla backpropagation
+          invece l'aggiornamento delle weight e le bias (parametri) 
+          viene fatto dal gradiant descent
+        '''
+
         # creazione di matrici per gradientiW  e gradientiQ
         gradW = np.zeros((self.n, len(self.f)))
         gradQ = np.zeros(len(self.f))

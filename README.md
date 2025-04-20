@@ -144,7 +144,9 @@ per capire come cambia la loss function se is modificano i parametri si utilizza
 ![](image/funzioneCambio.png)
 
 - Rappresenta il cambiamento approssimativo della funzione di costo ( C ) quando modifichi i parametri v1 e v2  di una quantità Δv1 e Δv2 <br>
-quindi il gradiente (∇C) sarebbe $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$  
+quindi il gradiente (∇C) sarebbe $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$. Queste $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$ sarebbero le derivate della loss function rispetto a W e la derivata della loss function rispetto alla bias in cui la derivata sarebbe **una funzione che rappresenta il tasso di cambiamento di una data funzione rispetto a una certa variabile, vale a dire la misura di quanto il valore di una funzione cambi al variare del suo argomento. Più informalmente, la derivata misura la crescita (o decrescita) che avrebbe una funzione in uno specifico punto spostandosi di pochissimo dal punto considerato.** <br>
+![](image/derivata.png)  
+
 - Δv1 Δv2 sono i passi che si fanno per far si che si 'scenda' e quindi si ottenga una loss function con un valore sempre più piccolo <br>
 Δv1 = $\frac{∂C}{∂v1}$ * -η  Δv2 = $\frac{∂C}{∂v2}$ * -η
 - -η sarebbe il learning rate (è un valore piccolo) inoltre è il learning rate che dice di quando bisogna 'scendere' nella funzione della gradiant descent. 
@@ -162,7 +164,7 @@ ovviamente si deve andare nella direzione −∇C perchè se no la loss aumenter
 - si calcola ancora una volta C con le weight e bias modificate del passaggio 2 
 - si verifica che il pssaggio tre sia corretto facendo il passaggio 1 meno il 3 e dovrebbe risultare il risultato del passaggio 2 
 
-**l'idea principale del gradiant decsent è quella di trtovare le weight e le bias che  permettono di trovare il minimo nella loss function**
+**l'idea principale del gradiant decsent è quella di trovare le weight e le bias che permettono di trovare il minimo nella loss function**
 
 quindi le nuove weight si calcolano facendo la differenza tra le weight attuali - lo step che in questo caso rappresenterebbe -η∇C. <br><br>
 ![](image/newParameters.png)
@@ -203,3 +205,7 @@ quindi 31.250 × 0,02 = 625 secondi che sarebbero 10 minuti
 Ma il modello potrebbe raggiungere una buona loss dopo solo 5 epoche, quindi 5x625 = 3125 secondi che in minuti risulterebbe 52 
 
 **si può presuppore che con SGD si ottenga una buona loss function solo dopo 5 epoch perchè con sdg si tropva più velocemenete il minimo della loss function**
+
+una correzzione da fare è che molto probabilmente mentre si legge si può pensare che faccia tutto il gradiant descent ma in verità ci sarebbe anche la **backPropagation**. <br>
+La backpropagation consioste nel calcolare i gradianti e quindi gli step che permettono di diminuire la loss, invece la gradiant descent consiste nell'aggiornamento dei parametri 
+quindi questi due algoritmi lavorano insieme 
