@@ -27,9 +27,9 @@ a += h1 # DERIVATA RISPETTO AD A
 d2 = a * b + c
 
 derivata = (d2 - d1) / h1 
-print(f"d1 = {d1}")
-print(f"d2 = {d2}")
-print(f"derivata {derivata}")
+# print(f"d1 = {d1}")
+# print(f"d2 = {d2}")
+# print(f"derivata {derivata}")
 
 
 class Value:
@@ -53,13 +53,32 @@ class Value:
         return out
     
 
-a = Value(4)
-b = Value(5)
-c = Value(-10)
+def lol():
+    h1 = 0.001
+    
+    a = Value(4)
+    b = Value(5)
+    c = Value(-10)
+    d = a * b
+    e = d + c
 
-d = a * b  + c
-# sono uguali
-# a.__mul__(b).__add__(c)
-print(d)
-print(d._precedente)
+    a = Value(4 + h1)
+    b = Value(5)
+    c = Value(-10)
 
+    d = a * b   
+    e1 = d + c
+
+    derivata = (e1.data - e.data) / h1
+
+    print(f"d = {d}")
+    print(f"d1 = {d1}")
+    print(f"derivata {derivata}")
+
+    '''
+      per calcolare la derivata di e rispetto a c quindi dd/dc 
+      il base case sarebbe cambiare d1 di h e ritornerebbe sempre 1 essendo che la
+      sotrazzione tra d1 - d sarebbe h e h / h da 1 
+    '''
+
+lol()

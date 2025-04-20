@@ -207,5 +207,5 @@ Ma il modello potrebbe raggiungere una buona loss dopo solo 5 epoche, quindi 5x6
 **si può presuppore che con SGD si ottenga una buona loss function solo dopo 5 epoch perchè con sdg si tropva più velocemenete il minimo della loss function**
 
 una correzzione da fare è che molto probabilmente mentre si legge si può pensare che faccia tutto il gradiant descent ma in verità ci sarebbe anche la **backPropagation**. <br>
-La backpropagation consioste nel calcolare i gradianti e quindi gli step che permettono di diminuire la loss, invece la gradiant descent consiste nell'aggiornamento dei parametri 
+La backpropagation consiste nel calcolare i gradianti e quindi gli step che permettono di diminuire la loss, invece la gradiant descent consiste nell'aggiornamento dei parametri 
 quindi questi due algoritmi lavorano insieme 
