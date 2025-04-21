@@ -209,7 +209,7 @@ class Embedding:
             for i in range(self.d_model // 2):
                 # i non consiste nella posizione del vettore ma sarebbe il numero
                 # della coppia e visto che il vettore è lungo d_model
-                # allora si fa diviso due essendo che si inseriscono due evalori 
+                # allora si fa diviso due essendo che si inseriscono due valori 
                 valueSin = math.sin(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per pari 
                 vector.append(valueSin)
 
@@ -217,6 +217,7 @@ class Embedding:
                 vector.append(valueCos)
 
             vectorTokens.append(vector)
+            
         return vectorTokens
 class Transformers:
     def __init__(self):
