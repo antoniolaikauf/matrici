@@ -39,7 +39,7 @@ class Value:
         self._precedente = set(_children)
         self.grad = 0.0
         self._op = _op
-        self.backward = lambda: None
+        self._backward = lambda: None
 
     # non ritorna un puntatore ma il suo valore 
     def __repr__(self):
@@ -60,10 +60,10 @@ class Value:
         e quindi se il gradiante di dd/da è sempre dd/dc 
         '''
         def _backward():
-            self.grad = 1 * out.grad
-            self.other = 1 * out.grad
+            self.grad += 1 * out.grad
+            other.grad *= 1 * out.grad
 
-        out.backward = _backward
+        out._backward = _backward
 
         return out
     
@@ -82,10 +82,10 @@ class Value:
         il risultato è b e quindi self.other
         '''
         def _backward():
-            self.grad = other.data * out.grad
-            self.other = self.data * out.grad
+            self.grad += other.data * out.grad
+            other.grad += self.data * out.grad
 
-        out.backward = _backward
+        out._backward = _backward
 
         return out
     
@@ -97,15 +97,33 @@ class Value:
         out = Value(t, (self,), 'tanh')
 
         def _backward():
-            self.grad = (1 - out.data**2) * out.grad
+            self.grad += (1 - out.data**2) * out.grad
 
-        out.backward = _backward
+        out._backward = _backward
 
         return out
         
-        
-        
+    def backward(self):
+        topo = []
+        topoAlgorithm = set()
 
+        def buildTopo(node):
+            if node not in topoAlgorithm:
+                topoAlgorithm.add(node)   
+                for _prev in node._precedente:
+                    buildTopo(_prev)
+                topo.append(node)  
+        
+        self.grad = 1
+        buildTopo(self)    
+
+        # reverse perchè si dovrebbe partire dall'output e quindi o
+        for node in reversed(topo): 
+            node._backward()
+            print(f'gradiante di  {node.grad}')
+        
+        
+    
 def lol():
     h1 = 0.001
     
@@ -139,7 +157,7 @@ def lol():
     a.grad = -10
     b.grad = -8
 
-    # PROCEDIMENTO DEL FOWARD PASS QUESTO SAREBBE UN STEPPER L'OTTIMIZZAZIONE 
+    # PROCEDIMENTO DEL FOWARD PASS QUESTO SAREBBE UN STEP PER L'OTTIMIZZAZIONE 
     a.data += h1 * a.grad
     b.data += h1 * b.grad
     c.data += h1 * c.grad
@@ -154,7 +172,7 @@ def lol():
       il base case sarebbe cambiare d1 di h e ritornerebbe sempre 1 essendo che la
       sotrazzione tra d1 - d sarebbe h e h / h da 1 
     '''
-
+    
 
 def neuron():
     # input
@@ -195,6 +213,18 @@ def neuron():
     x2.grad = w2.grad * x2w2.grad
 
 def backwardPropagation():
+    '''
+    per evitare un bug in cui se si usasse una variabile più di una volta il suo gradiante verrebbe sovrascritto 
+    grazie ad una regola della chain rule questi gradianti si devono accumulare 
+    (vedi video andrej 1:22)
+
+    a = Value(4)
+    b = Value(5)
+    c = a + b 
+    d = a * b 
+    in questo caso se i gradianti non si accumulassero rimarrebbero queli per la moltiplicazione e quindi il gradiante di a 
+    sarebbe sarebbe b (5) e quello di b sarebbe il valore di a (4) invece se si accumulano i gradianti sarebbero 6 per a e 5 per b 
+    '''
     x1 = Value(2)
     x2 = Value(0)
 
@@ -213,9 +243,15 @@ def backwardPropagation():
 
     # bisogna inizializzarlo ad 1 essendo che è 0 
     o.grad = 1.0
-    o.backward()
     # o.backward()
-    print(f'gradiante di n {n.grad}')
+    # n.backward()
+    # x1w1x2w2.backward()
+    # x1w1.backward()
+    # x2w2.backward()
+    # o.backward()
+
+    o.backward()
+    
 
 lol()
 # neuron()
