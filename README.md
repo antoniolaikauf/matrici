@@ -156,6 +156,7 @@ quindi alla fine l'eqauzione si può riscrivere come <br><br>
 ![](image/gradianteEquazione.png)<br>
  in cui ΔC consiste nel gradiante ∇C ( sarebbe $\frac{∂C}{∂v1}$ e $\frac{∂C}{∂v2}$  ) moltiplicato con il prodotto tra il gradiante ∇C e il learning rate 
 
+P.S (i gradianti del input si calolano ma non si cambiano essendo che non sono utili perchè gli input non si cambiano)
 
 ovviamente si deve andare nella direzione −∇C perchè se no la loss aumenterebbe 
 

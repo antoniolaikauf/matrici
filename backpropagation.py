@@ -46,6 +46,9 @@ class Value:
     def __repr__(self):
         return f"value = {self.data}"
     
+    def __rmul__(self, other):
+        return self * other
+    
     # a.__add__(b)
     def __add__(self, other):
         other = other if type(other) == Value else Value(other)
@@ -99,7 +102,7 @@ class Value:
         def _backward():
             self.grad += other.data * (self.data**(other.data - 1)) * out.grad
 
-        self._backward = _backward
+        out._backward = _backward
 
         return out
     
@@ -108,9 +111,10 @@ class Value:
         out = Value(self.data - other.data, (self, other), '-')
 
         def _backward():
-            self.data += 1 * out.grad
+            self.grad += 1 * out.grad # gradiente della di se stesso è 1 
+            other.grad += -1 * out.grad # il gradiente di other è -1 e non 1 provare a fare ((a - b + h) - (a -b)) / h il risultato è -1
 
-        self._backward = _backward 
+        out._backward = _backward 
 
         return out
 
@@ -141,12 +145,11 @@ class Value:
                 topo.append(node)  
         
         self.grad = 1
-        buildTopo(self)    
-
+        buildTopo(self)
         # reverse perchè si dovrebbe partire dall'output e quindi o
         for node in reversed(topo): 
             node._backward()
-            print(f'gradiante di {node.name} gradiante: {node.grad}')
+            # print(f'gradiante:  {node.grad}')
         
         
     
@@ -279,8 +282,6 @@ def backwardPropagation():
     # o.backward()
 
     o.backward()
-    
-    # print('ddddddddd', x2.grad)
 
 # lol()
 # neuron()
@@ -327,6 +328,9 @@ class Neuron:
        act = sum((wn*xn for xn, wn in zip(x, self.w)), self.b)  # si fa la somma dell'array e si somma con self.b
        out = act.tanh()
        return out
+    
+    def parameters(self):
+        return self.w + [self.b]
 
 class Layer:
     def __init__(self, nin, nout): # nin sarebbe quanti input deve avere ogni singolo neurone dell'ouptut nout sarebbe quanti neuroni ha un singolo layer
@@ -334,9 +338,17 @@ class Layer:
 
     def __call__(self, x):
         out = [n(x) for n in self.neurons] # calcolazione dell'output dei neuorni del layer 
-        return out    
+        return out[0] if len(out) == 1 else out  
+    
+    def parameters(self):
+        params = []
+        for neuron in self.neurons:
+            out = neuron.parameters()
+            params.extend(out)
 
-class MLP:
+        return params 
+
+class MLP: #Multi-Layer Perceptron
     def __init__(self, nin, nouts):
         sz = [nin] + nouts # siuze rete neurale
         self.net = [Layer(sz[idxLayer], sz[idxLayer + 1]) for idxLayer in range(len(nouts))] # layout della rete neurale
@@ -346,9 +358,49 @@ class MLP:
             x = layer(x) 
         
         return x
+    
+    def parameters(self):
+        params = []
+        for layer in self.net:
+            out = layer.parameters()
+            params.extend(out)
+        return params
 
 x = [2.0, 3.0, -1.0]
 mlp = MLP(3, [4, 4, 1]) #la rete qua sarebbe 3 -> 4 -> 4 -> 1
-print(mlp(x)) # python farebbe n.__call__(x)
+# print(mlp(x)) # python farebbe n.__call__(x)
 
+def training():
+    x = [
+        [2.0, 3.0, -1.0],
+        [3.0, -1.0, 0.5],
+        [0.5, 1.0, 1.0],
+        [1.0, 1.0, -1.0]
+         ]
+    
+    y = [1.0, -1.0, -1.0, 1.0]
+    lr = 0.01 #learning rate
 
+    # out = [mlp(idx) for idx in x]
+    parametes = mlp.parameters()
+
+    for _ in range(10):
+        # foward 
+        out = [mlp(idx) for idx in x]
+        loss = sum(((Value(ygt) - yout)**2 for ygt, yout in zip(y, out)), Value(0))
+
+        # backward
+        for p in parametes:
+            p.grad = 0.0
+
+        loss.backward()
+
+        # update
+        for p in parametes:
+           p.data -= lr * p.grad
+
+        print(f'loss function: {loss}   output reteneurale = {out}')
+    
+    return out
+
+print(training())
