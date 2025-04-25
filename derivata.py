@@ -284,7 +284,7 @@ def backwardPropagation():
 '''
 per confermare che i nostri gradianbtiu sono corretti
 '''
-import torch
+# import torch
 
 def pytorch():
 
@@ -310,4 +310,35 @@ def pytorch():
 
 backwardPropagation()
 
-pytorch()
+# pytorch()
+
+import random
+
+class Neuron:
+    def __init__(self, nin):
+        self.w = [Value(random.uniform(-1,1)) for _ in range(nin)] # creazione delle weight in base a quanti nin (input) si ha 
+        self.b = Value(random.uniform(-1, 1)) # creazione delle bias (solo una essendo che un neurona ha una sola bias) 
+
+    def __call__(self, x): # creazione dell'output di ongi singolo neurone 
+       prod = (xn * wn.data for xn, wn in zip(x, self.w))
+       act = Value(sum(prod)) + self.b
+       out = act.tanh()
+       return out
+    
+
+x = [1.0, 2.0]
+
+n = Neuron(len(x))
+print(n(x)) # python farebbe n.__call__(x)
+
+class Layer:
+    def __init__(self, nin, nout): # nin sarebbe quanti input deve avere ogni singolo neurone dell'ouptut nout sarebbe quanti neuroni ha un singolo layer
+        self.neurons = [Neuron(nin) for _ in range(nout)] # array del layer in base a quanti neuroni deve avere un layer
+
+    def __call__(self, x):
+        out = [n(x) for n in self.neurons] # calcolazione dell'output dei neuorni del layer 
+        return out
+        
+        
+l = Layer(len(x), 1)
+print(l(x))
