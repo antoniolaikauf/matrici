@@ -40,6 +40,7 @@ class Value:
         self.grad = 0.0
         self._op = _op
         self._backward = lambda: None
+        self.name = ''
 
     # non ritorna un puntatore ma il suo valore 
     def __repr__(self):
@@ -61,7 +62,7 @@ class Value:
         '''
         def _backward():
             self.grad += 1 * out.grad
-            other.grad *= 1 * out.grad
+            other.grad += 1 * out.grad
 
         out._backward = _backward
 
@@ -88,6 +89,27 @@ class Value:
         out._backward = _backward
 
         return out
+    
+    def __pow__(self, other):
+        out = Value(self.data**other.data, (self,), '**')
+
+        def _backward():
+            self.grad += other.data * (self.data**(other.data - 1)) * out.grad
+
+        self._backward = _backward
+
+        return out
+    
+    def __sub__(self, other):
+        out = Value(self.data - other.data, (self, other), '-')
+
+        def _backward():
+            self.data += 1 * out.grad
+
+        self._backward = _backward 
+
+        return out
+
     
     # optimazier function 
     def tanh(self):
@@ -120,7 +142,7 @@ class Value:
         # reverse perchè si dovrebbe partire dall'output e quindi o
         for node in reversed(topo): 
             node._backward()
-            print(f'gradiante di  {node.grad}')
+            print(f'gradiante di {node.name} gradiante: {node.grad}')
         
         
     
@@ -225,21 +247,23 @@ def backwardPropagation():
     in questo caso se i gradianti non si accumulassero rimarrebbero queli per la moltiplicazione e quindi il gradiante di a 
     sarebbe sarebbe b (5) e quello di b sarebbe il valore di a (4) invece se si accumulano i gradianti sarebbero 6 per a e 5 per b 
     '''
-    x1 = Value(2)
-    x2 = Value(0)
+    x1 = Value(2); x1.name = ' x1' 
+    x2 = Value(0); x2.name = ' x2'
+
+    # x2 = x1**x2
 
     # weight
-    w1 = Value(-3)
-    w2 = Value(1)
+    w1 = Value(-3); w1.name = ' w1'
+    w2 = Value(1); w2.name = ' w2'
 
-    b = Value(6.8813735)
+    b = Value(6.8813735); b.name = ' b'
 
-    x1w1 = x1 * w1; x1w1._op = '*'
-    x2w2 = x2 * w2; x2w2._op = '*'
+    x1w1 = x1 * w1; x1w1._op = '*'; x1w1.name = ' x1w1'
+    x2w2 = x2 * w2; x2w2._op = '*'; x2w2.name = ' x2w2'
 
-    x1w1x2w2 = x1w1 + x2w2; x1w1x2w2._op = '+'
-    n =  x1w1x2w2 + b
-    o = n.tanh()
+    x1w1x2w2 = x2w2 + x1w1 ; x1w1x2w2._op = '+'; x1w1x2w2.name = 'x1w1x2w2'
+    n =  x1w1x2w2 + b; n.name = 'n'
+    o = n.tanh(); o.name = 'o'
 
     # bisogna inizializzarlo ad 1 essendo che è 0 
     o.grad = 1.0
@@ -252,7 +276,38 @@ def backwardPropagation():
 
     o.backward()
     
+    # print('ddddddddd', x2.grad)
 
-lol()
+# lol()
 # neuron()
+
+'''
+per confermare che i nostri gradianbtiu sono corretti
+'''
+import torch
+
+def pytorch():
+
+
+    x1 = torch.Tensor([2.0]).double()      ; x1.requires_grad = True
+    x2 = torch.Tensor([0.0]).double()      ; x2.requires_grad = True
+
+    w1 = torch.Tensor([-3.0]).double()     ; w1.requires_grad = True
+    w2 = torch.Tensor([1.0]).double()      ; w2.requires_grad = True
+    b = torch.tensor([6.8813735]).double()   ; b.requires_grad = True
+    n = (x1 * w1) + (x2 * w2) + b
+    o = torch.tanh(n)
+
+    print(f"o {o.data.item()}")
+
+    o.backward()
+
+    print(f"x1 {x1.grad.item()}")
+    print(f"x2 {x2.grad.item()}")
+    print(f"w1 {w1.grad.item()}")
+    print(f"w2 {w2.grad.item()}")
+
+
 backwardPropagation()
+
+pytorch()
