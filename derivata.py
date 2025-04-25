@@ -48,6 +48,7 @@ class Value:
     
     # a.__add__(b)
     def __add__(self, other):
+        other = other if type(other) == Value else Value(other)
         out = Value(self.data + other.data, (self, other), '+')
 
         '''
@@ -70,6 +71,7 @@ class Value:
     
     # a.__mul__(b)
     def __mul__(self, other):
+        other = other if type(other) == Value else Value(other)
         out = Value(self.data * other.data, (self, other), '*')
 
         '''
@@ -91,6 +93,7 @@ class Value:
         return out
     
     def __pow__(self, other):
+        other = other if type(other) == Value else Value(other)
         out = Value(self.data**other.data, (self,), '**')
 
         def _backward():
@@ -101,6 +104,7 @@ class Value:
         return out
     
     def __sub__(self, other):
+        other = other if type(other) == Value else Value(other)
         out = Value(self.data - other.data, (self, other), '-')
 
         def _backward():
@@ -284,10 +288,10 @@ def backwardPropagation():
 '''
 per confermare che i nostri gradianbtiu sono corretti
 '''
-# import torch
 
 def pytorch():
 
+    # import torch
 
     x1 = torch.Tensor([2.0]).double()      ; x1.requires_grad = True
     x2 = torch.Tensor([0.0]).double()      ; x2.requires_grad = True
@@ -320,16 +324,9 @@ class Neuron:
         self.b = Value(random.uniform(-1, 1)) # creazione delle bias (solo una essendo che un neurona ha una sola bias) 
 
     def __call__(self, x): # creazione dell'output di ongi singolo neurone 
-       prod = (xn * wn.data for xn, wn in zip(x, self.w))
-       act = Value(sum(prod)) + self.b
+       act = sum((wn*xn for xn, wn in zip(x, self.w)), self.b)  # si fa la somma dell'array e si somma con self.b
        out = act.tanh()
        return out
-    
-
-x = [1.0, 2.0]
-
-n = Neuron(len(x))
-print(n(x)) # python farebbe n.__call__(x)
 
 class Layer:
     def __init__(self, nin, nout): # nin sarebbe quanti input deve avere ogni singolo neurone dell'ouptut nout sarebbe quanti neuroni ha un singolo layer
@@ -337,8 +334,21 @@ class Layer:
 
     def __call__(self, x):
         out = [n(x) for n in self.neurons] # calcolazione dell'output dei neuorni del layer 
-        return out
+        return out    
+
+class MLP:
+    def __init__(self, nin, nouts):
+        sz = [nin] + nouts # siuze rete neurale
+        self.net = [Layer(sz[idxLayer], sz[idxLayer + 1]) for idxLayer in range(len(nouts))] # layout della rete neurale
+
+    def __call__(self, x):
+        for layer in self.net:
+            x = layer(x) 
         
-        
-l = Layer(len(x), 1)
-print(l(x))
+        return x
+
+x = [2.0, 3.0, -1.0]
+mlp = MLP(3, [4, 4, 1]) #la rete qua sarebbe 3 -> 4 -> 4 -> 1
+print(mlp(x)) # python farebbe n.__call__(x)
+
+
