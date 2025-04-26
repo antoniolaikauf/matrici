@@ -379,7 +379,7 @@ def training():
          ]
     
     y = [1.0, -1.0, -1.0, 1.0]
-    lr = 0.01 #learning rate
+    lr = 0.01 # learning rate
 
     # out = [mlp(idx) for idx in x]
     parametes = mlp.parameters()
