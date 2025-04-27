@@ -16,7 +16,7 @@ class Network:
     # 3 e il terzo ne ha 4  
     def __init__(self, sizes):
         self.size = sizes
-        self.num_layer = len(sizes)
+        self.num_layers = len(sizes)
         self.bias = [np.random.randn(y, 1) for y in sizes[1:]] # inizializzazione bias
         self.weights = [np.random.randn(sizes[x + 1], sizes[x]) for x in range(len(sizes) - 1)] # ializzazione weight
 
@@ -39,21 +39,18 @@ class Network:
         ogni strato
         '''
 
-        print(input)
         for weightIdx , biasIdx in zip(self.weights, self.bias):
-            output = self.sigmod(np.dot(weightIdx, input) + biasIdx)  
+            output = self.sigmoid(np.dot(weightIdx, input) + biasIdx)  
             # print(f"prima {np.dot(weightIdx, input)}" )  
             # print(f"weight usate {weightIdx}\nbias usata {biasIdx}\ninput usato {input} --> output ottenuto {output} grandezza output = {len(output)}\n")
             input = output
         return output
     
     def backprop(self, x, y):
-        """Return a tuple ``(nabla_b, nabla_w)`` representing the
-        gradient for the cost function C_x.  ``nabla_b`` and
-        ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
-        to ``self.biases`` and ``self.weights``."""
-        nabla_b = [np.zeros(b.shape) for b in self.biases]
+        # creazione di array per conservare i gradianti
+        nabla_b = [np.zeros(b.shape) for b in self.bias]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
+
         # feedforward
         activation = x
         activations = [x] # list to store all the activations, layer by layer
@@ -63,27 +60,28 @@ class Network:
             zs.append(z)
             activation = self.sigmoid(z)
             activations.append(activation)
+
+
         # backward pass
+        # calcolo gradianti ultimo strato
         delta = self.derivateCost(activations[-1], y) * \
             self.derivateSigmoidFunction(zs[-1])
         nabla_b[-1] = delta
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-        # Note that the variable l in the loop below is used a little
-        # differently to the notation in Chapter 2 of the book.  Here,
-        # l = 1 means the last layer of neurons, l = 2 is the
-        # second-last layer, and so on.  It's a renumbering of the
-        # scheme in the book, used here to take advantage of the fact
-        # that Python can use negative indices in lists.
+
+        # calcolo gradianti da penultimo strato fin ad arrivare al s
         for l in range(2, self.num_layers):
+            #derivata della sigmod function
             z = zs[-l]
             sp = self.derivateSigmoidFunction(z)
-            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+
+            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp # chain rule
+            # calcolo gradiante di loss function (o quadratic function) rispetto alle bias
             nabla_b[-l] = delta
+            # calcolo gradiante di loss function (o quadratic function) rispetto alle weight
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+
         return (nabla_b, nabla_w)
-
-
-
 
     def updateMiniBatch(self, batchs, lr):
         # emptyB = [np.zeros((len(biasId), len(biasId[0]))) for biasId in self.bias]
@@ -92,10 +90,11 @@ class Network:
         gradW = [np.zeros(weightId.shape) for weightId in self.weights]
         # print(gradB)
         # print(gradW)
-
         for batch in batchs:
             # print(batch[0], batch[1])
             delta_nabla_b, delta_nabla_w = self.backprop(batch[0], batch[1])
+            gradB = [nb+dnb for nb, dnb in zip(gradB, delta_nabla_b)]
+            gradW = [nw+dnw for nw, dnw in zip(gradW, delta_nabla_w)]
 
         self.weight = [w - ((lr / len(batchs)) * newWeight) for w, newWeight in zip(self.weights, gradW) ]
         self.bias =  [b - ((lr / len(batchs)) * newBias) for b, newBias in zip(self.bias, gradB)]
@@ -107,28 +106,49 @@ class Network:
         e il desisderato output. Come primo procedimento si mescolano gli elementi dell'array essendo 
         ce dopo si prende da esso un batch di dimensioni ridotte rispetto al trainingData
         '''
+
         lenTraingData = len(trainingData)
         for epochId in range(epochs):
             random.shuffle(trainingData)
             miniBatchs = [trainingData[k:k + batchSize] for k in range(0, lenTraingData, batchSize)]
             for miniBatch in miniBatchs:
-                self.updateMiniBatch(miniBatch, learningRate) 
-            # print(f"epoch {epochId} completato")
+                # print(miniBatchs)
+                self.updateMiniBatch(miniBatch, learningRate)
 
-    def lossFunction(self, trainingData):
-        a = [(dataId[0] - dataId[1])**2 for dataId in trainingData]
-        loss = 1 /(2 * len(trainingData)) * sum(a)
-        return loss
+            if test_data: print(f"epoch {epochId} acccuratezza: {self.evaluate(test_data, True)}")
+            else: print(f"epoch {epochId} acccuratezza: {self.evaluate(trainingData, False)}")
+
+    
+    def evaluate(self, testdata, checkTest):
+        # np.argmax prende l'indice con il numero maggiore nell'array [0,2,1] prende l'indice 1
+        if checkTest == False:
+            test_results = [(np.argmax(data[0][1]), np.argmax(data[1])) for data in testdata]
+        else:
+            test_results = [(np.argmax(self.feedFoward(data[0])), data[1]) for data in testdata]
+        return sum(int(x == y) for (x, y) in test_results)
+    
+    # def lossFunction(self, trainingData):
+    #     a = [(dataId[0] - dataId[1])**2 for dataId in trainingData]
+    #     loss = 1 /(2 * len(trainingData)) * sum(a)
+    #     return loss
 
 
 
+'''
+
+        if valuesReal: results = [(np.argmax(self.feedFoward(data[0][1])), data[1]) for data in values]
+        else: results = [(np.argmax(self.feedFoward(data[0])), data[1]) for data in values]
+        return sum(int(x == y) for (x, y) in results)
+
+'''
 
 
-net = Network([2, 3, 4])
-inputRete = default_rng(10).random((2,1))
-print(inputRete)
-# print(net.bias)
-# print(net.weights)
-print(net.feedFoward(inputRete))
-print(net.SGD(2, 3, [(1,2),(3,7)], 0.01))
+
+# net = Network([2, 3, 4])
+# inputRete = default_rng(10).random((2,1))
+# print(inputRete)
+# # print(net.bias)
+# # print(net.weights)
+# print(net.feedFoward(inputRete))
+# print(net.SGD(2, 3, [(1,2),(3,7)], 0.01))
 # net.updateMiniBatch(1,2)
