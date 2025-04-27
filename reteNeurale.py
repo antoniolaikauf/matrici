@@ -121,26 +121,14 @@ class Network:
     
     def evaluate(self, testdata, checkTest):
         # np.argmax prende l'indice con il numero maggiore nell'array [0,2,1] prende l'indice 1
+        # si creano le coppie tra l'output della rete e l'output desiderato
         if checkTest == False:
             test_results = [(np.argmax(data[0][1]), np.argmax(data[1])) for data in testdata]
         else:
             test_results = [(np.argmax(self.feedFoward(data[0])), data[1]) for data in testdata]
+        # si ocntrolla se il valore restituito da feedfoward è uguale ad y che sarebbe l'output desiderato
         return sum(int(x == y) for (x, y) in test_results)
-    
-    # def lossFunction(self, trainingData):
-    #     a = [(dataId[0] - dataId[1])**2 for dataId in trainingData]
-    #     loss = 1 /(2 * len(trainingData)) * sum(a)
-    #     return loss
 
-
-
-'''
-
-        if valuesReal: results = [(np.argmax(self.feedFoward(data[0][1])), data[1]) for data in values]
-        else: results = [(np.argmax(self.feedFoward(data[0])), data[1]) for data in values]
-        return sum(int(x == y) for (x, y) in results)
-
-'''
 
 
 
