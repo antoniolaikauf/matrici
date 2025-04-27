@@ -396,6 +396,9 @@ def training():
         loss.backward()
 
         # update
+        # nell'update verrannno modificate solo i parametri e non gli output dei neuroni 
+        # gli output dei neuroni cambiarà a sua volta e quindi anche il loro gradiante (anche se non serve a molto)
+        # perchè le weight e le bias sono state modificate e quindi l'output dei neuroni verrà modificato a sua volta
         for p in parametes:
            p.data -= lr * p.grad
 

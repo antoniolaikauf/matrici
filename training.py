@@ -9,5 +9,5 @@ net = Network([784, 40, 10])
 '''
 più aumenti gli epoch e i neuroni nel layer e più l'accuratezza dovrebbe aumentare
 '''
-# net.SGD(40, 10, training_data, 3.0, test_data=None)
-net.SGD(40, 10, training_data, 3.0, test_data=test_data)
+net.SGD(40, 10, training_data, 0.01, test_data=None)
+# net.SGD(40, 10, training_data, 0.01, test_data=test_data)

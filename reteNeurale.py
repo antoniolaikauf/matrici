@@ -64,12 +64,13 @@ class Network:
 
         # backward pass
         # calcolo gradianti ultimo strato
-        delta = self.derivateCost(activations[-1], y) * \
-            self.derivateSigmoidFunction(zs[-1])
+        # si calcola la differenza tra l'output che si voleva con l'output che ha fornito la rete 
+        delta = self.derivateCost(activations[-1], y) * self.derivateSigmoidFunction(zs[-1])
         nabla_b[-1] = delta
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
 
-        # calcolo gradianti da penultimo strato fin ad arrivare al s
+        # calcolo gradianti da penultimo strato fin ad arrivare al 2
+        # PER CAPIRE MEGLIO COME SI CALOLANO I GRADIANTI VEDERE IMMAGINE gradianti.png
         for l in range(2, self.num_layers):
             #derivata della sigmod function
             z = zs[-l]

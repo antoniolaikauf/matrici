@@ -23,6 +23,11 @@ una moltiplicazione tra matrici si può avere solo se il numero di colonne della
 
 ![](image/product2.gif)
 
+### HADAMART PRODUCT 
+moltiplicazione tra matrici che prende due matrici di stesse dimensioni e ritorna una matrici di uguali dimensioni
+
+![](IMAGE/hadamart-product.png)
+
 ### TRASPOSIZIONE 
 Una trasposizione di una matrice A di dimensioni m x n è formata dalla trasformazione delle row in colonne e vice versa 
 
@@ -59,8 +64,9 @@ ora la nostra equazione può essere riscritta come
 
 in cui tutti e i tre parametri sono vettori la x di lunghezza 1 x d_model (che d_model è 512) nel paper transformers la W sarà di 512 x 2048 e la bias di 1 x 2048 (queste lunghezze sono solo nella trasformazione lineare perchè nella seconda bisogna trasformare l'output di questa eqauzione a dimensioni di d_model)
 
-quando la bias è molto alta è più facile che l'output sia 1 <br><br><br><br>
+quando la bias è molto alta è più facile che l'output sia 1 <br>
 
+![](image/activation.png) 
 
 ![](image/percettoreEsempio.png)
 
@@ -122,7 +128,7 @@ Ovviamente il processo di trovare le weight e le bias avviene tramite una funzio
 
 - w sono le weight 
 - b è la bias
-- n sono il totale di inpunt per il training
+- n sono la quantità di esempi usati nel training 
 - a è l'output per ogni xn quindi nel contesto di pirma sarebbe a=[0.01, 0.01, 0.99, 0.01]
 - y(x) è il valore che il modello dovrebbe produrre per un dato input ( x ) 
 - la somma è su tutti gli input nel trainig set 
@@ -200,7 +206,7 @@ Dopo 10 epoche (10 aggiornamenti), hai speso  10 × 600= 6.000 secondi (100 minu
 SGD (batch size = 32):<br>
 Ogni mini-batch (32 immagini) richiede 0,02 secondi.
 
-un epoch ha $\prod{1.000.000}{32}$  = 31.250 che sarebbero la quantità dei mini-batch, 
+un epoch ha $\frac{1.000.000}{32}$  = 31.250 che sarebbero la quantità dei mini-batch, 
 quindi 31.250 × 0,02 = 625 secondi che sarebbero 10 minuti
 
 Ma il modello potrebbe raggiungere una buona loss dopo solo 5 epoche, quindi 5x625 = 3125 secondi che in minuti risulterebbe 52 
@@ -210,3 +216,7 @@ Ma il modello potrebbe raggiungere una buona loss dopo solo 5 epoche, quindi 5x6
 una correzzione da fare è che molto probabilmente mentre si legge si può pensare che faccia tutto il gradiant descent ma in verità ci sarebbe anche la **backPropagation**. <br>
 La backpropagation consiste nel calcolare i gradianti e quindi gli step che permettono di diminuire la loss, invece la gradiant descent consiste nell'aggiornamento dei parametri 
 quindi questi due algoritmi lavorano insieme 
+
+### BACKPROPAGATION
+
+l'obbiettivo della loss function è quella di calcolare le derivate della funzione di loss con rispettoa a qualsiasi weight e bias della rete 
