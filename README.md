@@ -325,3 +325,43 @@ Queste derivate rappresentano il **tasso di variazione** della funzione di costo
 W = W - $\frac{η}{totInput}$ * $\frac{∂C}{∂W}$,  B = B - $\frac{η}{totInput}$ * $\frac{∂C}{∂B}$
 
 Questo processo si ripete per ogni mini-batch (nel caso di SGD) o per l'intero dataset (nel caso di GD), iterando su più epoche fino a raggiungere una funzione di costo sufficientemente bassa.
+
+
+# PAPER: Neural Machine Translation by Jointly Learning to Align and Translate
+
+### Introduzione a attention
+
+modello composto da encoder e decoder 
+
+encoder prende come input x1, x2, ..., xn
+e da come output h1, h2, ..., hn in cui ogni h è un vettore che contiene informazioni sulla parola xn
+
+invece il decoder per generare una parola ha bisogno di:
+- G sarebbe la rete neurale del decoder di solito con una softamax alla fine 
+- s è un arappresentazione astratta della frase (in vettori)
+- y - 1 è la parola generata dal decoder 
+- c che sarebbe un vettore di contesto 
+
+![](image/schema.png)
+
+dove **eij=a(s0, hj)** e **a** sarebbe una rete neurale feedfoward 
+questa funzione a dice quanto è rilevante hj rispetto a s0 (quindi per la parola 0 essendo che non si è ancora prodotto nessun stato nascosto ) e quindi per ogni parola produce un valore 
+
+una volta calcolata **e** si calcolano i pesi a (**CHE NON SAREBBERO I PARAMETRI DELLA RETE NEURALE**) per ogni singola parola e alla fine si calcola il vettore di contesto e e grazie a questo si può capire chi ha più peso (chi è più importante) con s (in questo casso s0 perchè sarebbe la prima parola)
+
+the cat is on the table  c sarebbe = 0.30*h1, 0.50*h2, 0.07*h3, 0.04*h4, 0.03*h5, 0.03*h6 
+i numeri che vengono moltiplicati con hn sarebbero i pesi **a**. Si può notare che ogni volta che s cambia essendo che il decoder producerà una parola i pesi **a** a sua volta cambiano. Con questo processo con **C** e i suoi pesi **a** si cerca di far targhettizzare/puntare **Y** cioè l'output del decoder con **x** 
+
+Una volta che si ha il contesto del vettore C allora si può creare la parola con il decoder:
+
+- G sarebbe la rete neurale del decoder di solito con una softamax alla fine 
+- s è lo stato nascosto iniziale (le parole elaborate fino ad ora)
+- y - 1 l'output prodotto dal decoder 
+- c vettor eid ocntesto calcolato soppra 
+
+questo deoder per esempio produce una probabilità sulle parole del vocabolario e quindi tramite e quindi con questi tre input il deocder potrebbe dare una probabilità alta a il 
+
+dopo aver prodotto l'output rigenera tutto quello descritto sopra tranne le h essendo che una volta create si utilizzano sempre quelle ma invece si ricalcola il vettore di contesto C anche le y - 1 è aggiornata essendo che si è aggiunta una parola e anche lo stato nascosto 
+
+
+

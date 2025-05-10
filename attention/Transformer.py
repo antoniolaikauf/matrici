@@ -118,7 +118,7 @@ class MultiHeadAttention:
         # number of head
         self.headNumber = self.d_model // 64
         self.d_k = self.d_model // self.headNumber
-        #weith of every query, value , key for every head
+        # weith of every query, value , key for every head
         self.w_q = [default_rng(10 + x).random((self.d_model, self.d_k)) * 0.001 for x in range(self.headNumber)]
         self.w_k = [default_rng(20 + x).random((self.d_model, self.d_k)) * 0.001 for x in range(self.headNumber)]
         self.w_v = [default_rng(30 + x).random((self.d_model, self.d_k)) * 0.001 for x in range(self.headNumber)]
