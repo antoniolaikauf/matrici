@@ -363,5 +363,40 @@ questo deoder per esempio produce una probabilità sulle parole del vocabolario 
 
 dopo aver prodotto l'output rigenera tutto quello descritto sopra tranne le h essendo che una volta create si utilizzano sempre quelle ma invece si ricalcola il vettore di contesto C anche le y - 1 è aggiornata essendo che si è aggiunta una parola e anche lo stato nascosto 
 
+<br>
 
+qua si vede che grazie ai pesi **a** le parole come input sono correlate con le gli output  
+
+![](image/modello.png)
+
+
+
+
+### embedding 
+
+l'embedding è il processo di trasformare i token/words in vettori di lunghezza fissa composti da numeri 
+i vettori sarebbero oggetti di 1xN dimensioni o Nx1 dimensioni in cui N rappresenta le dimensioni del vettore
+
+[0,2] questo sarebbe un vettore bidimensionale e si potrebbe rappresentare sul piano cartesiano, [0,5,3,2,4] questo sarebbe un vettore a 5 dimensioni.<br>
+Un vettore per essere considerato tale deve appartenere allo **spazio vettoriale** che è definito da un insieme di **oggetti** (i vettori) su cui sono definite due operazioni:
+- l'addizione 
+- moltiplicazione con uno scalare 
+le operazioni su questi vettori devono dare la stessa quantità di dimensioni
+
+dopo esiste lo **sottospazio vettoriale** in cui si aggiunge questa proprietà:
+se vengono eseguite queste due operazioni sui vettori il risultato deve appartenere allo stesso spazio vettoriale 
+
+X = {(x, y) appartenente R**2 | y = 0}
+
+x = 3, y = 0
+x1 = 4, y1 =0
+scalare = 2
+se y valesse 1 non sarebbe all'interno dello sottospazio vettoriale
+
+(3 + 4), (0 + 0) = (7, 0)
+
+2(3, 0) = (6, 0)
+2(4, 0) = (8, 0)
+
+questi sono vettori essendo che rispettano tutte le regole 
 
