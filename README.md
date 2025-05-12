@@ -400,3 +400,32 @@ se y valesse 1 non sarebbe all'interno dello sottospazio vettoriale
 
 questi sono vettori essendo che rispettano tutte le regole 
 
+l'embedding catturano le relazioni tra parole. Questo significa che parole con significato simile devono trovarsi vicino nello spazio vettoriale rispetto a parole che non sono correlate. <br>
+L'idea di base è che parole che appaiono in contesti simili (es. "gatto" e "cane" in frasi come "Il gatto mangia" e "Il cane mangia") hanno significati simili e quindi vettori vicini nello spazio.
+
+ci possono  essere più approcci:
+- **TF-IDF** questo è composto da funzioni che indicano l'importanza delle parole in un documento o di tutti i documenti 
+  TF si calcola quante volte una parola compare in un unico documento e più questa appare e più sarà importante.<br>
+  IDF si calcola quante volte una parola appare in tutti i documenti e meno volte appare allora sarà considerata più importante 
+  e il risultato tra TF e IDF sarà il risultato della parola 
+  questo porterà parole che hanno un simile significato vicine tra di loro 
+  il problema con questo approccio è che non cattura la relazione che ha con le altre parole, ma si basa sulla frequenza dei termini 
+- **word2vec** sarebbe una rete neurale che crea i vettori per le parole, questi vettori rappresentano il significato delle parole nel loro contesto in un testo, nell a frase il cane mangia il cibo le parole cane mangia e cibo sono vicine, se dopo in un altra frase compare il gatto mangia allora il modello deduce che cane e gatto sono simili essendo che nel contesto entrambi mangiano  ci possono essere due approcci:
+  - **CBOW (Continuous Bag of Words)** in cui prevede una parola target basandosi sulle parole del contesto circostante (le parole vicine)
+  - **Skip-gram** da una singola parola prevede le altre parole circostanti <br>
+  
+  per addestrare questo modello come input si utilizzano grandi quantità di testo, si definisce una **contex window** (quante parole inserire alla volta nella rete) e un singolo hidden layer.<br>
+  word2vec genera per ogni parola un singolo vettore quindi anche se la frase cambia i vettori delle parole rimangono sempre quelli 
+
+- **BERT** sarebbe un solo encoder trasformers composto da:
+  - Tokenizer: in cui divide il testo in numeri (ascii)
+  - Embedding: sarebbe il modulo che crea i vettori per i token 
+  - Encoder: uno stack di trasformers con la **self-attention**
+  - Task-head: prende i vettori dell'encoder e li trasforma in un output specifico per il compito 
+
+  BERT ha preso spunto dal paper **attention is all you need** dalla archittetura del transformers e a differenza di word2vec che per ogni parola ha un singolo vettore BERT ha un vettore per ogni singola parola ma se quella parola viene usata in un altra frase diversa allor ail suo vettore cambia. <br>
+  I vettori dei token vengono inizializzati nell'embedding ma dopo nell'encoder vengono modificati in base alle altre parole
+
+  TF-IDF non crea embeding ma vettori sparsi che si basano sulla frequenza della parola e non cattura nessun significato 
+  word2vec crea embedding statici e considera solo le parole vicino e non nell'intera frase
+  BERT crea embedding dinamici che sono contestualizzati in base alla frase  
