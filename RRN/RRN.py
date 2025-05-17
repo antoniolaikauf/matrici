@@ -1,4 +1,4 @@
-
+from Tokenizator import Tokenizer
 
 class Encoder:
     def __init__(self):
@@ -36,9 +36,12 @@ class RRN:
         pass
 
 
+x = 'ciao ciao'
+tokens = Tokenizer(x)
+wordEncoded = tokens.encode()
+print(tokens.vocab)
+print(tokens.decode(wordEncoded))
 
 
-x = 'ciao come stai'
-
-rrn = RRN(x)
-rrn.encoder()
+# rrn = RRN(x)
+# rrn.encoder()

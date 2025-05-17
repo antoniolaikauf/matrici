@@ -3,8 +3,9 @@ class Tokenizer:
         self.word = word
         self.numMerge = numMerge
         self.idMerge = 255
-        self.vocab = {x: x  for x in range(256)}
+        self.vocab = {x: x for x in range(256)}
         self.mergeDone = 0
+        self.wordEncoded = 0
 
     def countPair(self, wordEncode):
 
@@ -46,10 +47,10 @@ class Tokenizer:
             wordId = 0
             while wordId < (len(wordEncode) - 1):
                 if wordEncode[wordId] == maxPair[0] and wordEncode[wordId + 1] == maxPair[1]:
-                    if maxPair not in self.vocab:
+                    if maxPair not in self.vocab.values():
                         self.idMerge += 1
                         self.mergeDone += 1
-                        self.vocab[maxPair] = self.idMerge
+                        self.vocab[self.idMerge] = maxPair
 
                     wordEncode[wordId] = self.idMerge
                     del wordEncode[wordId + 1]  
@@ -59,12 +60,40 @@ class Tokenizer:
             count = self.countPair(wordEncode)
             maxPair = max(count, key = count.get)
 
-        print(f'new phrase: {wordEncode} token mint: {self.mergeDone}')
-        
-    def decode(self):
-        pass
+        self.wordEncoded = wordEncode
+        print(f'new phrase: {self.wordEncoded} token mint: {self.mergeDone}')
 
-word = 'cicici'
-tk = Tokenizer(word)
-tk.encode()
-print(tk.vocab)
+        return self.wordEncoded
+    
+    def decode(self, wordDecoded):
+
+        '''
+        il decode prende come input un array di token e li trasforma
+        il lettere, se si da come input un token che non è dentro al vocab 
+        ritornerà un errore
+        il ciclo finisce quando i token sono tutti minori di 256 essendo che se 
+        sono maggiori allora c'è stato un merge e quando si incontra un token che 
+        non è maggiore di 255 (e quindi un merge) si incrementa l'ìndice
+        '''
+
+        wordId = 0
+
+        while wordId < len(wordDecoded):
+            if wordDecoded[wordId] not in self.vocab: raise Exception(f' il token {wordDecoded[wordId]} non è presente in vocab')
+            else:
+                if (wordDecoded[wordId] > 255):
+                    element = self.vocab[wordDecoded[wordId]]
+                    wordDecoded[wordId] = element[0]
+                    wordDecoded.insert(wordId + 1, element[1])
+                else:
+                    wordId += 1
+
+        return ''.join(chr(token) for token in wordDecoded)
+
+if __name__ == '__main__':
+    word = 'cicici'
+    tk = Tokenizer(word)
+    token = tk.encode()
+    phrase = [10, 256, 78]
+    print(tk.decode(token))
+    print(tk.decode(phrase))

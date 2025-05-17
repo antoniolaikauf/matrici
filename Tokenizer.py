@@ -1,5 +1,5 @@
 # type: ignore
-phrase = 'cici'
+phrase = 'cicici'
 
 class Tokenizer():
     
@@ -78,4 +78,4 @@ if __name__ == "__main__":
     token = Tokenizer(phrase)
 
     print(token.encode())
-    print(token.decode())
+    print('decode' , token.decode())
