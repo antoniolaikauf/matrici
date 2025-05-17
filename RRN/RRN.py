@@ -1,12 +1,19 @@
 from Tokenizator import Tokenizer
+from Embedding import Embedding
 
 class Encoder:
-    def __init__(self):
+    def __init__(self, d_model = 512, N = 6):
+        self.d_model = d_model
+        self.N = N
         pass
 
     def embedding(self, x):
-        words = x.split(' ')
-        
+        tokens = Tokenizer(x)
+        wordEncoded = tokens.encode()
+        # print(tokens.vocab)
+        # print(tokens.decode(wordEncoded))
+        return wordEncoded
+
 
     def Foward(self, x):
         inputs = self.embedding(x)
@@ -37,11 +44,6 @@ class RRN:
 
 
 x = 'ciao ciao'
-tokens = Tokenizer(x)
-wordEncoded = tokens.encode()
-print(tokens.vocab)
-print(tokens.decode(wordEncoded))
 
-
-# rrn = RRN(x)
-# rrn.encoder()
+rrn = RRN(x)
+rrn.encoder()

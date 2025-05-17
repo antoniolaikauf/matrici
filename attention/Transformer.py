@@ -213,7 +213,7 @@ class Embedding:
                 valueSin = math.sin(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per pari 
                 vector.append(valueSin)
 
-                valueCos = math.cos(token / 10000**(2 * i / self.d_model)) # questo corrisponderebbe per dispari 
+                valueCos = math.cos(token / 10000**(2 * i  / self.d_model)) # questo corrisponderebbe per dispari 
                 vector.append(valueCos)
 
             vectorTokens.append(vector)
