@@ -10,13 +10,16 @@ class Encoder:
     def embedding(self, x):
         tokens = Tokenizer(x)
         wordEncoded = tokens.encode()
+        embedding = Embedding(self.d_model, wordEncoded)
+        wordsEmbedded = embedding.getCombinedEmbedding()
         # print(tokens.vocab)
         # print(tokens.decode(wordEncoded))
-        return wordEncoded
+        return wordsEmbedded
 
 
     def Foward(self, x):
         inputs = self.embedding(x)
+        return inputs
 
     def backward(self):
         pass
@@ -37,7 +40,7 @@ class RRN:
     def encoder(self):
         h = Encoder()
         foward = h.Foward(self.x)
-        pass
+        return foward
 
     def decoder(self):
         pass
@@ -46,4 +49,4 @@ class RRN:
 x = 'ciao ciao'
 
 rrn = RRN(x)
-rrn.encoder()
+print(rrn.encoder())

@@ -134,7 +134,7 @@ class MultiHeadAttention:
             heads.append(h)
 
         # we concatenate every chunk of 64 
-        # forst word [[a1, a2, a3] and  [[b1, b2, b3]
+        # first word [[a1, a2, a3] and  [[b1, b2, b3]
         #second word [a4, a5, a6]]      [b4, b5, b6]]
 
         #now the array is 

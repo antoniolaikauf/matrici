@@ -1,5 +1,6 @@
 import math
-import numpy as np
+import torch
+import torch.nn as nn
 
 '''
 d_model sarebbe la grandezza dei vettori con cui si lavora all'interno del modello 
@@ -20,12 +21,12 @@ vicino alla parola gatto
 '''
 
 class Embedding:
-    def __init__(self, d_model, input, vocabSize = 30000, maxToken = 512):
+    def __init__(self, d_model, input, vocabSize = 10000, maxToken = 512):
         self.d_model = d_model
         self.input = input
         self.vocabSize = vocabSize
         self.maxToken = maxToken
-        self.tokenEmbedding = np.random.randn(vocabSize, d_model) 
+        self.tokenEmbedding = nn.Embedding(vocabSize, d_model)
         self.positionalEmbedding = self.createPositionalEncoding()
 
     def createPositionalEncoding(self):
@@ -39,7 +40,8 @@ class Embedding:
         di aiutarlo a capire la distanza tra due parole essendo parole che si trovano vicino 
         allora avranno risutlati simili rispetto a parole che si trovano nell aposizione 2 e 50  
         '''
-        tokenVectiors = np.zeros((self.maxToken, self.d_model))
+        
+        tokenVectiors = torch.zeros((self.maxToken, self.d_model))
         
         for pos in range(len(self.input)):
             for i in range(0, self.d_model, 2):
@@ -58,18 +60,24 @@ class Embedding:
         
         '''
         createTokenEmbedding ottiene i token usati come input nello spazio 
-        vettoriale di self.tokenEmbedding
+        vettoriale di self.tokenEmbedding come input si usa un tesor con 
+        i token 
         '''
-        embedding = np.zeros((len(self.input), self.d_model))
 
-        for idToken, token  in enumerate(self.input):
-            embedding[idToken] = self.tokenEmbedding[token] * math.sqrt(self.d_model)
-
-        return embedding
+        return self.tokenEmbedding(torch.tensor(self.input)) * math.sqrt(self.d_model)
     
     def getCombinedEmbedding(self):
 
-        return self.positionalEmbedding + self.createTokenEmbedding()
+        '''
+        combinazione tra la codifica della frase e l'embedding dei token 
+        questo permette al modello di apprendere la posizione essenodo che due token vicini
+        avranno risultati simili nella codifica delle posizionbe rispetto a un token 
+        in posizione 2 e uno a 50.
+        Permette di capire anche il significato essendo che nel tokenEmbedding i token 
+        con significato simile saranno vicino di posizione         
+        '''
+
+        return torch.add(self.positionalEmbedding, self.createTokenEmbedding())
 
 
 
@@ -77,6 +85,7 @@ if __name__ == '__main__':
     embedding = Embedding(512, [10, 30])
     # print(embedding.createPositionalEncoding())
     # print(embedding.createTokenEmbedding())
+    # print(embedding.tokenEmbedding)
 
     print(embedding.getCombinedEmbedding())
 
