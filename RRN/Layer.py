@@ -63,9 +63,33 @@ class MultiHeadAttention(nn.Module):
         
         return torch.cat(output, dim=1)
 
-class FFN:
-    def __init__(self):
-        pass
+class FFN(nn.Module):
+    def __init__(self, d_model, N, input):
+        super(FFN, self).__init__()
+        self.d_modelIntermediate = 2048
+        self.d_model = d_model
+        self.input = input
+        self.weight_1 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.d_modelIntermediate)) for _ in range(N)])
+        self.weight_2 = nn.ParameterList([nn.Parameter(torch.randn(self.d_modelIntermediate, self.d_model)) for _ in range(N)])
+        self.bias_1 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_modelIntermediate)) for _ in range(N)])
+        self.bias_2 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_model)) for _ in range (N)])
+    
+    def ffn(self, index):
+
+        '''
+        ffn sarebbero due trasformazioni lineari la prima ha una dimensione di 2048 una volta inserita 
+        all'interno della funzione relu che azzera tuttti i valori che sono minori di 0  la seconda trasformazione
+        lineare ha dimensione 512
+        la ffn viene eseguita per introdurre la non linearità, le proprietà della linearità sono:
+        a = 3 b = 4 scalare = 3
+        - f(a + b) = f(a) + f(b)
+        - f(a * scalare) = scalare * f(a)
+        '''
+        
+        linearTrasformation_1 = torch.add(torch.matmul(self.input, self.weight_1[index]), self.bias_1[index])
+        softmax = torch.relu(linearTrasformation_1)
+        linearTrasformation_2 = torch.add(torch.matmul(softmax, self.weight_2[index]), self.bias_2[index])
+        return linearTrasformation_2  
 
 class Norm:
     def __init__(self):
@@ -74,4 +98,9 @@ class Norm:
 if __name__ == '__main__':
     test = torch.tensor(torch.ones((2, 512)))
     heads = MultiHeadAttention(512, test)
-    heads.forward()
+    out = heads.forward()
+
+    test1 = FFN(512, 6, out)
+    ffn = test1.ffn(2)
+    print(test1.weight_1[2])
+    print(ffn.size())
