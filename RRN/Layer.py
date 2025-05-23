@@ -91,14 +91,52 @@ class FFN(nn.Module):
         linearTrasformation_2 = torch.add(torch.matmul(softmax, self.weight_2[index]), self.bias_2[index])
         return linearTrasformation_2  
 
-class Norm:
-    def __init__(self):
-        pass
+class add_Norm(nn.Module):
+    def __init__(self, tokenEmbedding, outSubLayer, d_model = 512):
+        super(add_Norm, self).__init__()
+        self.tokenEmbedding = tokenEmbedding
+        self.outSubLayer = outSubLayer
+        self.layer_norm = nn.LayerNorm(d_model)
 
-if __name__ == '__main__':
+    def residualConnection(self):
+
+        '''
+        la residual connection viene usata per far si che i gradianti 
+        non diventano valori troppo piccoli e quindi rallentare 
+        l'ottimmizzazione, questo perchè i gradianti dei neuroni che si trovano 
+        all'inizio dell'input vengono calcolati tramite la chain rule e quindi se i
+        gradianti dei layer che sono lontani da quelli iniziali (quelli dell'output) sono 
+        gi adi per se piccoli allora i gradianti dei layer che sono all'inizio dell'input 
+        saranno bassi o quasi zero 
+        '''
+
+        return torch.add(self.tokenEmbedding, self.outSubLayer)
+
+    def norm(self):
+
+        '''
+        Applica la LayerNorm al risultato della connessione residua per stabilizzare le attivazioni,
+        evitando valori troppo grandi o instabili.
+        layer_norm lavora sulla dimensione del d_model quindi 512
+        quindi prima calcola la media, in seguito calcola la varianza (si calcola facendo il valore - media elevato alla seconda).
+        Per ogni valore all'interno del vettore del token calcola (x - media / radiceQuadtrata(varianzacalcola + eps)) * gamma + beta
+        gamma e beta sono parametri apprendibili invece eps sarebbe un valore che tende a 0 per evitare divisione per 0
+        '''
+
+        residualConnection = self.residualConnection()     
+        return self.layer_norm(residualConnection)
+        
+
+
+if __name__ == '__main__': 
     test = torch.tensor(torch.ones((2, 512)))
     heads = MultiHeadAttention(512, test)
     out = heads.forward()
+
+    addNorm = add_Norm(test, out)
+    print(addNorm.norm())
+    
+    print(out.size())
 
     test1 = FFN(512, 6, out)
     ffn = test1.ffn(2)
