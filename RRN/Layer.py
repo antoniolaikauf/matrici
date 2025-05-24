@@ -69,12 +69,13 @@ class FFN(nn.Module):
         self.d_modelIntermediate = 2048
         self.d_model = d_model
         self.input = input
+        # nel paper dicono che si utilizzano differenti parametri in base al layer, quindi ogni layer avra differenti arametri rispetto agli altri
         self.weight_1 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.d_modelIntermediate)) for _ in range(N)])
         self.weight_2 = nn.ParameterList([nn.Parameter(torch.randn(self.d_modelIntermediate, self.d_model)) for _ in range(N)])
         self.bias_1 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_modelIntermediate)) for _ in range(N)])
         self.bias_2 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_model)) for _ in range (N)])
     
-    def ffn(self, index):
+    def feedFoward(self, index):
 
         '''
         ffn sarebbero due trasformazioni lineari la prima ha una dimensione di 2048 una volta inserita 
@@ -112,7 +113,7 @@ class add_Norm(nn.Module):
 
         return torch.add(self.tokenEmbedding, self.outSubLayer)
 
-    def norm(self):
+    def norm(self, residualConnection):
 
         '''
         Applica la LayerNorm al risultato della connessione residua per stabilizzare le attivazioni,
@@ -122,8 +123,7 @@ class add_Norm(nn.Module):
         Per ogni valore all'interno del vettore del token calcola (x - media / radiceQuadtrata(varianzacalcola + eps)) * gamma + beta
         gamma e beta sono parametri apprendibili invece eps sarebbe un valore che tende a 0 per evitare divisione per 0
         '''
-
-        residualConnection = self.residualConnection()     
+     
         return self.layer_norm(residualConnection)
         
 
@@ -139,6 +139,6 @@ if __name__ == '__main__':
     print(out.size())
 
     test1 = FFN(512, 6, out)
-    ffn = test1.ffn(2)
+    ffn = test1.feedFoward(2)
     print(test1.weight_1[2])
     print(ffn.size())
