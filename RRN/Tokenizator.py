@@ -1,6 +1,5 @@
 class Tokenizer:
-    def __init__(self, word, numMerge = 50):
-        self.word = word
+    def __init__(self, numMerge = 50):
         self.numMerge = numMerge
         self.idMerge = 255
         self.vocab = {x: x for x in range(256)}
@@ -23,7 +22,7 @@ class Tokenizer:
             else: count[pair] += 1
         return count
     
-    def encode(self):
+    def encode(self, word):
 
         '''
         encode decodifica la frase in ascii quindi fino ad un massimo di 8
@@ -38,7 +37,7 @@ class Tokenizer:
         e incrementare il id lo stesso che tanto non cambia 
         '''
 
-        wordEncode = list(self.word.encode('utf-8'))
+        wordEncode = list(word.encode('utf-8'))
         count = self.countPair(wordEncode)
         maxPair = max(count, key = count.get)
         
@@ -61,7 +60,7 @@ class Tokenizer:
             maxPair = max(count, key = count.get)
 
         self.wordEncoded = wordEncode
-        print(f'new phrase: {self.wordEncoded} token mint: {self.mergeDone}')
+        # print(f'new phrase: {self.wordEncoded} token mint: {self.mergeDone}')
 
         return self.wordEncoded
     
@@ -92,8 +91,13 @@ class Tokenizer:
 
 if __name__ == '__main__':
     word = 'cicici'
-    tk = Tokenizer(word)
-    token = tk.encode()
+    word1 = 'ciao ciao'
+
+    tk = Tokenizer()
+    tokens = tk.encode(word)
+    tokens2 = tk.encode(word1)
     phrase = [10, 256, 78]
-    print(tk.decode(token))
+    print(tk.decode(tokens))
     print(tk.decode(phrase))
+
+    print(tk.vocab)

@@ -5,7 +5,7 @@ import torch.nn as nn
 '''
 d_model sarebbe la grandezza dei vettori con cui si lavora all'interno del modello 
 
-vocabSize sarebbe l grandezza di tutti i token possibili del modello 
+vocabSize sarebbe la quantità di tutti i token possibili del modello 
 
 maxToken sarebbe la grandezza di quanti token può gestire in una sola 
 volta il modello 

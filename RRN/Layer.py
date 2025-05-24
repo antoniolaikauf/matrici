@@ -10,9 +10,9 @@ class MultiHeadAttention(nn.Module):
         self.tokensEmbedding = tokensEmbedding
         self.dk = d_model // head
         self.dv = d_model // head
-        self.w_q = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk)) for _ in range(head)])
-        self.w_k = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk)) for _ in range(head)])
-        self.w_v = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk)) for _ in range(head)])
+        self.w_q = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk), requires_grad=True ) for _ in range(head)])
+        self.w_k = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk), requires_grad=True ) for _ in range(head)])
+        self.w_v = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk), requires_grad=True ) for _ in range(head)])
 
     def attention(self, q, k, v):
 
@@ -70,10 +70,10 @@ class FFN(nn.Module):
         self.d_model = d_model
         self.input = input
         # nel paper dicono che si utilizzano differenti parametri in base al layer, quindi ogni layer avra differenti arametri rispetto agli altri
-        self.weight_1 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.d_modelIntermediate)) for _ in range(N)])
-        self.weight_2 = nn.ParameterList([nn.Parameter(torch.randn(self.d_modelIntermediate, self.d_model)) for _ in range(N)])
-        self.bias_1 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_modelIntermediate)) for _ in range(N)])
-        self.bias_2 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_model)) for _ in range (N)])
+        self.weight_1 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.d_modelIntermediate), requires_grad=True ) for _ in range(N)])
+        self.weight_2 = nn.ParameterList([nn.Parameter(torch.randn(self.d_modelIntermediate, self.d_model), requires_grad=True ) for _ in range(N)])
+        self.bias_1 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_modelIntermediate), requires_grad=True ) for _ in range(N)])
+        self.bias_2 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_model), requires_grad=True ) for _ in range (N)])
     
     def feedFoward(self, index):
 

@@ -1,6 +1,9 @@
 from Tokenizator import Tokenizer
 from Embedding import Embedding
 from Layer import MultiHeadAttention, FFN, add_Norm
+import json
+from datasets import load_dataset
+my_dataset_dictionary = load_dataset("mideind/icelandic-english-translation")
 
 class Encoder:
     def __init__(self, input, d_model = 512, N = 6):
@@ -9,8 +12,7 @@ class Encoder:
         self.x = self.embedding(input)
 
     def embedding(self, x):
-        tokens = Tokenizer(x)
-        wordEncoded = tokens.encode()
+        
         embedding = Embedding(self.d_model, wordEncoded)
         wordsEmbedded = embedding.getCombinedEmbedding()
         # print(tokens.vocab)
@@ -71,13 +73,37 @@ class RRN:
     def encoder(self):
         h = Encoder(self.x)
         foward = h.Foward()
+        # foward.backward()
         return foward
 
     def decoder(self):
         pass
 
 
-x = 'ciao ciao'
+if __name__ == '__main__':
+    import os 
+    x = my_dataset_dictionary['train'][10]['input']
+    
+    tokens = Tokenizer()
+    phrases = {}
+    for phraseId in range(len(my_dataset_dictionary['train'])):
+        phrase = my_dataset_dictionary['train'][phraseId]
+        wordEncoded = tokens.encode(phrase['input'])
+        phrases[phraseId] = {
+            'input': phrase['input'],
+            'wordEncoded': wordEncoded,
+            'target': phrase['target']
+        }
+    
+    if os.path.exists('data.json') == False: 
+        with open('data.json', 'w') as f:
+            json.dump(phrases, f, ensure_ascii=False)
+    
+    with open('data.json', 'r') as f:
+        print(json.load(f)['10'])
 
-rrn = RRN(x)
-print(rrn.encoder())
+    
+    # print(len(my_dataset_dictionary['train']))
+
+    # rrn = RRN(x)
+    # print(rrn.encoder())
