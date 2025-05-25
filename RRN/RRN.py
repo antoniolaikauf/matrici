@@ -2,25 +2,56 @@ from Tokenizator import Tokenizer
 from Embedding import Embedding
 from Layer import MultiHeadAttention, FFN, add_Norm
 import json
+import os 
 from datasets import load_dataset
 my_dataset_dictionary = load_dataset("mideind/icelandic-english-translation")
 
+class encoderLayer:
+
+    '''
+    encoderLayer sarebbe la struttura di un singolo layer composto da 
+    attention, ffn, e due add_norm come descritto dal paper.
+    la funzione foward consiste nel processo di elaborazione dei dati 
+    di un singolo layer 
+    '''
+
+    def __init__(self, d_model, heads=8, N=6):
+        self.attention = MultiHeadAttention(d_model, heads)
+        self.ffn = FFN(d_model, N)
+        self.add_norm1 = add_Norm(d_model)
+        self.add_norm2 = add_Norm(d_model)
+        self.N = N
+
+    def foward(self, x, indexHead):
+        
+        attention_out = self.attention.forward(x)
+        residual_connection1 = self.add_norm1.residualConnection(attention_out, x)
+        norm1_out = self.add_norm1.norm(residual_connection1)
+
+        ffn_out = self.ffn.feedFoward(indexHead, norm1_out)
+
+        residual_connection2 = self.add_norm2.residualConnection(ffn_out, norm1_out)
+        norm2_out = self.add_norm2.norm(residual_connection2)
+
+        return norm2_out
+
 class Encoder:
-    def __init__(self, input, d_model = 512, N = 6):
+    def __init__(self, vocab_size, d_model = 512, N = 6):
         self.d_model = d_model
         self.N = N
-        self.x = self.embedding(input)
+        self.vocab_size = vocab_size
+        self.net_encoder = [encoderLayer(self.d_model, 8, self.N) for _ in range(N)] # composizione della rete per l'encoder
 
     def embedding(self, x):
         
-        embedding = Embedding(self.d_model, wordEncoded)
-        wordsEmbedded = embedding.getCombinedEmbedding()
+        embedding = Embedding(self.d_model, x, self.vocab_size)
+        words_embedded = embedding.getCombinedEmbedding()
         # print(tokens.vocab)
         # print(tokens.decode(wordEncoded))
-        return wordsEmbedded
+        return words_embedded
 
 
-    def Foward(self):
+    def Foward(self, x):
 
         '''
         nel encoder eseguito solo la foward essendo che se si usasse un architettura come 
@@ -29,25 +60,13 @@ class Encoder:
         del paper Neural Machine Translation by Jointly Learning to Align and Translate
         '''
 
-        inputs = self.x
+        inputs = self.embedding(x)
 
-        for layerId in range(self.N):
-           attention = MultiHeadAttention(self.d_model, inputs)
-           fowardAttention = attention.forward()
+        for layer_id in range(len(self.net_encoder)):
+           layer_out = self.net_encoder[layer_id].foward(inputs, layer_id)
 
-           addNorm1 = add_Norm(fowardAttention, inputs, self.d_model)
-           residualConnection1 = addNorm1.residualConnection()
-           norm1 = addNorm1.norm(residualConnection1)
-
-           ffn = FFN(self.d_model, self.N, norm1)
-           feedFoward = ffn.feedFoward(layerId)
-
-           addNorm2 = add_Norm(feedFoward, norm1, self.d_model)
-           residualConnection2 = addNorm2.residualConnection()
-           norm2 = addNorm2.norm(residualConnection2)
-
-           print(f'layer num {layerId}')
-           inputs = norm2
+           print(f'layer num {layer_id}')
+           inputs = layer_out
         
         return inputs
         
@@ -67,12 +86,14 @@ class  Decoder:
         pass
 
 class RRN:
-    def __init__(self, x):
-        self.x = x
+    def __init__(self, vocab_size, d_model = 512, N = 6):
+        self.vocab_size = vocab_size
+        self.d_model = d_model
+        self.N = N
         
-    def encoder(self):
-        h = Encoder(self.x)
-        foward = h.Foward()
+    def encoder(self, x):
+        h = Encoder(self.vocab_size)
+        foward = h.Foward(x)
         # foward.backward()
         return foward
 
@@ -81,17 +102,15 @@ class RRN:
 
 
 if __name__ == '__main__':
-    import os 
-    x = my_dataset_dictionary['train'][10]['input']
     
     tokens = Tokenizer()
     phrases = {}
     for phraseId in range(len(my_dataset_dictionary['train'])):
         phrase = my_dataset_dictionary['train'][phraseId]
-        wordEncoded = tokens.encode(phrase['input'])
+        word_encoded = tokens.encode(phrase['input'])
         phrases[phraseId] = {
             'input': phrase['input'],
-            'wordEncoded': wordEncoded,
+            'wordEncoded': word_encoded,
             'target': phrase['target']
         }
     
@@ -100,10 +119,10 @@ if __name__ == '__main__':
             json.dump(phrases, f, ensure_ascii=False)
     
     with open('data.json', 'r') as f:
-        print(json.load(f)['10'])
+        rrn = RRN(len(tokens.vocab))
+        words = json.load(f)['10']['wordEncoded']
+        out = rrn.encoder(words)
+        print(out)
 
-    
+    print(tokens.vocab)
     # print(len(my_dataset_dictionary['train']))
-
-    # rrn = RRN(x)
-    # print(rrn.encoder())

@@ -3,11 +3,10 @@ import torch.nn as nn
 import math
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model, tokensEmbedding, head = 8):
+    def __init__(self, d_model, head = 8):
         super(MultiHeadAttention, self).__init__()
         self.head = head
         self.d_model = d_model
-        self.tokensEmbedding = tokensEmbedding
         self.dk = d_model // head
         self.dv = d_model // head
         self.w_q = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.dk), requires_grad=True ) for _ in range(head)])
@@ -38,11 +37,11 @@ class MultiHeadAttention(nn.Module):
         token con stesse dimensioni di quelle iniziali  
         '''
 
-        scaledDotPorduct = torch.matmul(q, torch.transpose(k, 0, 1)) / math.sqrt(self.dv)
-        softmax = torch.softmax(scaledDotPorduct, dim=1)
+        scaled_dot_product = torch.matmul(q, torch.transpose(k, 0, 1)) / math.sqrt(self.dv)
+        softmax = torch.softmax(scaled_dot_product, dim=1)
         return torch.matmul(softmax, v)
 
-    def forward(self):
+    def forward(self, tokens_embedding):
 
         '''
         Ogni testa ha la sua matrice e quindi ha speecifiche q_w, k_w, v_w
@@ -54,9 +53,9 @@ class MultiHeadAttention(nn.Module):
         output = []
 
         for headId in  range(self.head):
-            q_w =  torch.matmul(self.tokensEmbedding, self.w_q[headId])
-            k_w = torch.matmul(self.tokensEmbedding, self.w_k[headId])
-            v_k = torch.matmul(self.tokensEmbedding, self.w_v[headId])
+            q_w =  torch.matmul(tokens_embedding, self.w_q[headId])
+            k_w = torch.matmul(tokens_embedding, self.w_k[headId])
+            v_k = torch.matmul(tokens_embedding, self.w_v[headId])
             head = self.attention(q_w, k_w, v_k)
             print(f'head number {headId + 1} shape {head.size()}')
             output.append(head)
@@ -64,18 +63,17 @@ class MultiHeadAttention(nn.Module):
         return torch.cat(output, dim=1)
 
 class FFN(nn.Module):
-    def __init__(self, d_model, N, input):
+    def __init__(self, d_model, N):
         super(FFN, self).__init__()
-        self.d_modelIntermediate = 2048
+        self.d_model_intermediate = 2048
         self.d_model = d_model
-        self.input = input
         # nel paper dicono che si utilizzano differenti parametri in base al layer, quindi ogni layer avra differenti arametri rispetto agli altri
-        self.weight_1 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.d_modelIntermediate), requires_grad=True ) for _ in range(N)])
-        self.weight_2 = nn.ParameterList([nn.Parameter(torch.randn(self.d_modelIntermediate, self.d_model), requires_grad=True ) for _ in range(N)])
-        self.bias_1 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_modelIntermediate), requires_grad=True ) for _ in range(N)])
+        self.weight_1 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model, self.d_model_intermediate), requires_grad=True ) for _ in range(N)])
+        self.weight_2 = nn.ParameterList([nn.Parameter(torch.randn(self.d_model_intermediate, self.d_model), requires_grad=True ) for _ in range(N)])
+        self.bias_1 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_model_intermediate), requires_grad=True ) for _ in range(N)])
         self.bias_2 = nn.ParameterList([nn.Parameter(torch.randn(1, self.d_model), requires_grad=True ) for _ in range (N)])
     
-    def feedFoward(self, index):
+    def feedFoward(self, index, input):
 
         '''
         ffn sarebbero due trasformazioni lineari la prima ha una dimensione di 2048 una volta inserita 
@@ -87,19 +85,17 @@ class FFN(nn.Module):
         - f(a * scalare) = scalare * f(a)
         '''
         
-        linearTrasformation_1 = torch.add(torch.matmul(self.input, self.weight_1[index]), self.bias_1[index])
-        softmax = torch.relu(linearTrasformation_1)
-        linearTrasformation_2 = torch.add(torch.matmul(softmax, self.weight_2[index]), self.bias_2[index])
-        return linearTrasformation_2  
+        linear_trasformation_1 = torch.add(torch.matmul(input, self.weight_1[index]), self.bias_1[index])
+        softmax = torch.relu(linear_trasformation_1)
+        linear_trasformation_2 = torch.add(torch.matmul(softmax, self.weight_2[index]), self.bias_2[index])
+        return linear_trasformation_2  
 
 class add_Norm(nn.Module):
-    def __init__(self, tokenEmbedding, outSubLayer, d_model = 512):
+    def __init__(self, d_model = 512):
         super(add_Norm, self).__init__()
-        self.tokenEmbedding = tokenEmbedding
-        self.outSubLayer = outSubLayer
         self.layer_norm = nn.LayerNorm(d_model)
 
-    def residualConnection(self):
+    def residualConnection(self, out_sub_layer, in_sub_layer):
 
         '''
         la residual connection viene usata per far si che i gradianti 
@@ -111,9 +107,9 @@ class add_Norm(nn.Module):
         saranno bassi o quasi zero 
         '''
 
-        return torch.add(self.tokenEmbedding, self.outSubLayer)
+        return torch.add(in_sub_layer, out_sub_layer)
 
-    def norm(self, residualConnection):
+    def norm(self, residual_connection):
 
         '''
         Applica la LayerNorm al risultato della connessione residua per stabilizzare le attivazioni,
@@ -124,21 +120,23 @@ class add_Norm(nn.Module):
         gamma e beta sono parametri apprendibili invece eps sarebbe un valore che tende a 0 per evitare divisione per 0
         '''
      
-        return self.layer_norm(residualConnection)
+        return self.layer_norm(residual_connection)
         
 
 
-if __name__ == '__main__': 
-    test = torch.tensor(torch.ones((2, 512)))
-    heads = MultiHeadAttention(512, test)
-    out = heads.forward()
+if __name__ == '__main__':
+    d_model = 512
+    test = torch.tensor(torch.ones((2, d_model)))
+    heads = MultiHeadAttention(d_model)
+    out = heads.forward(test)
 
-    addNorm = add_Norm(test, out)
-    print(addNorm.norm())
+    addNorm = add_Norm(d_model)
+    residual_connection = addNorm.residualConnection(out, test)
+    print(addNorm.norm(residual_connection))
     
     print(out.size())
 
-    test1 = FFN(512, 6, out)
-    ffn = test1.feedFoward(2)
+    test1 = FFN(d_model, 6)
+    ffn = test1.feedFoward(2, out)
     print(test1.weight_1[2])
     print(ffn.size())
