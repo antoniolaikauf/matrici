@@ -77,8 +77,9 @@ class FFN(nn.Module):
 
         '''
         ffn sarebbero due trasformazioni lineari la prima ha una dimensione di 2048 una volta inserita 
-        all'interno della funzione relu che azzera tuttti i valori che sono minori di 0  la seconda trasformazione
-        lineare ha dimensione 512
+        all'interno della funzione relu che azzera tuttti i valori che sono minori di 0 la seconda trasformazione
+        lineare ha dimensione 512, se si togliesse la funzione RELU allora la ffn darebbe la linearità ma 
+        grazie a RELU la linearità viene rotta perche RELU(A + B) è diverso da RELU (A) + RELU(B)
         la ffn viene eseguita per introdurre la non linearità, le proprietà della linearità sono:
         a = 3 b = 4 scalare = 3
         - f(a + b) = f(a) + f(b)
@@ -113,11 +114,24 @@ class add_Norm(nn.Module):
 
         '''
         Applica la LayerNorm al risultato della connessione residua per stabilizzare le attivazioni,
-        evitando valori troppo grandi o instabili.
-        layer_norm lavora sulla dimensione del d_model quindi 512
-        quindi prima calcola la media, in seguito calcola la varianza (si calcola facendo il valore - media elevato alla seconda).
-        Per ogni valore all'interno del vettore del token calcola (x - media / radiceQuadtrata(varianzacalcola + eps)) * gamma + beta
-        gamma e beta sono parametri apprendibili invece eps sarebbe un valore che tende a 0 per evitare divisione per 0
+        evitando valori troppo grandi o instabili, inoltre riduce anche i tempi del feed-foward nel 
+        processare tutti i dati e quindi riducendo il tempo di allenamento.
+        layer_norm lavora con un vettore di tre dimensioni composto da: batch_size, sequence_length, hidden_state 
+        in cui batch_size sarebbero quanti esempi può processare il modello alla volta
+        sequence_lenght la massima lunghezza di una possibile sequenza 
+        hidden_state corrisponde al d_model e il layer_norm lavora su questa dimensione, perchè normalizza 
+        ogni elemento del token
+        es Frase 1 primo token: [1.0, 0.5, -0.2, 1.5] Frase 2 primo token: [0.8, 0.3, 0.1, 1.2]
+        la media si fa con sommando gli elementi di ogni token/ la quantità di token 
+        invece la variazione si fa la differenza di ogni elemento del token con la media, si sommano tutti questi 
+        risultati e si fa diviso per la lunghezza del token 
+        e dopo si esegue la formula sotto per ogni elemento del token.
+        Si calcola la media, in seguito calcola la varianza (si calcola facendo il valore - media elevato alla seconda).
+        Per ogni valore all'interno del vettore del token calcola ((x - media) / radiceQuadtrata(varianzacalcola + eps)) * gain + bias
+        gain e bias sono parametri apprendibili invece eps sarebbe un valore che tende a 0 per evitare divisione per 0
+        il layer normalization ha una proprietà che le altre due tecniche (batch normalization e weigth normalization)
+        non hanno, cioè che anche se le matrici dei pesi (quelle della produzione di un valore del neurone) vengono
+        scalate di un valore o vengono sommate con un vettore sempre uguale il risultato del neurone non cambia  
         '''
      
         return self.layer_norm(residual_connection)

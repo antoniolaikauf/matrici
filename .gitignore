@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+data.json
+/RRN/dataset
 
 # Editor directories and files
 .vscode/*
