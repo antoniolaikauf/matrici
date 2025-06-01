@@ -2,6 +2,8 @@
 rete neurale senza librerie e con un solo neurone
 '''
 
+import matplotlib.pyplot as plt
+
 data_set = [
     [2, 4],
     [3, 6],
@@ -9,8 +11,8 @@ data_set = [
     [5, 10]
 ]
 
-epoch = 20
-w = -3
+epoch = 50
+w = 2.1
 eps = 0.01
 lr = 0.001
 
@@ -37,6 +39,7 @@ def backPropagation(inputs, eps, w):
     grad = (loss2 - loss1) / eps
     return grad
 
+loss_value = []
 for _ in range(epoch):
     print('\n---------------------------------')
     output = forward(data_set)
@@ -44,8 +47,21 @@ for _ in range(epoch):
     print(f'output rete neurale: {output}')
     grad = backPropagation(data_set, eps, w)
     w -= grad * lr
+    loss_value.append(loss)
+
     print('---------------------------------')
 
 output = forward(data_set)
 print(f'OUTPUT FINALE: {output}')
 print('W', w)
+print(loss_value)
+
+def plot():
+    plt.axis((0, epoch, 0, loss_value[0],))
+    plt.title('Loss function')
+    plt.xlabel('Epoch')
+    plt.ylabel('Error')
+    plt.plot(loss_value)
+    plt.show()
+
+plot()

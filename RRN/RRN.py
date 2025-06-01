@@ -124,5 +124,5 @@ if __name__ == '__main__':
         out = rrn.encoder(words)
         print(out)
 
-    print(tokens.vocab)
+    # print(tokens.vocab)
     # print(len(my_dataset_dictionary['train']))
