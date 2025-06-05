@@ -1,10 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from  numpy.random import rand, randn
+import math
 
 N = 100
 w = 1
 b = 2
+w1 = np.random.randn(1)
+b1 = np.random.randn(1)
+lr = 0.001
 eps = randn(N, 1)
 
 '''
@@ -29,6 +33,12 @@ x = rand(N, 1)
 # x = test(x)
 y = x*w + b + eps
 
+
+#---------------------------
+# DATASET
+#---------------------------
+
+
 idx = np.arange(N)
 np.random.shuffle(idx)
 
@@ -38,31 +48,49 @@ id_val = idx[int(N * 0.7):]
 train_x, train_y = x[id_train], y[id_train] # input e output per il trainig 
 val_x = x[id_val], y[id_val] # input e output per vedere come performa il modello dopo essere allenato
 
-def foward():
-    w1 = np.random.randn(1)
-    b1 = np.random.randn(1)
+
+
+
+def foward(w1, b1):
     return w1 * train_x + b1
     
-out = foward()
-error = out - train_y
+out = foward(w1, b1)
 
-# calcolo della MSE mean square loss che consiste in 1/n sum(yhatn - yn)**
-loss = (error**2).mean()
-print(loss)
+def Backpropagation(para_w, para_b, output, para_lr=0.1):
+    error = output - train_y
+    # calcolo della MSE mean square loss che consiste in 1/n sum(yhatn - yn)**
+    loss = (error**2).mean()
+    print(loss)
+    gradW = 2 * (train_x * error).mean() # mean sarebbe 1/len(train_x)
+    gradQ = 2 * error.mean()
+    para_w -= lr*gradW
+    para_b -= lr*gradQ
 
+    return para_w, para_b
 
-gradW = 2 * (train_x * error).mean() # mean sarebbe 1/len(train_x)
-gradQ = 2 * error.mean()
+# processo di allenamento della rete 
+for x in range(1):
 
-print(gradW, gradQ)
+    print(w1, b1)
+    w1, b1 = Backpropagation(w1, b1, out, lr)
+    out = foward(w1, b1)
 
+# plt.plot(out)
+# plt.show()
+# print(y, out)
+
+def standard_deviation(features, train):
+    media = train.mean()
+    Standardizing = np.sqrt(np.power(train - media, 2).mean())
+    scale = (train - media) / Standardizing
+    return scale
+
+print(standard_deviation(train_x[10], train_x))
 # plt.plot(train_x, train_y, 'bo')
 # plt.show()
 
 w_random = np.linspace(w - 3, w + 3, 200)
 b_random = np.linspace(b - 3, b + 3, 200)
-
-# print(w_random)
 
 '''
 grafico che mostra la curva della loss se si tenesse fisso un parametro.
@@ -76,7 +104,7 @@ o scende lentamente (cosa positiva essendo che scende ma molto lenta)
 def curveGrad(w_parameter, b_parameter, data):
     tot_loss = []
     for testId in range(len(w_parameter)):
-        out = w_parameter[testId] * data + b_parameter[65]
+        out = w_parameter[testId] * data + b_parameter
         error = out - train_y[0]
         loss = (error**2).mean()
         tot_loss.append(loss)
@@ -97,4 +125,5 @@ def curveGrad(w_parameter, b_parameter, data):
     plt.plot(tot_loss, linestyle='dashed')
     plt.show()
 
-curveGrad(w_random, b_random, train_x.reshape(-1, 1, 1))
+# b_fix = b_random[65]
+# curveGrad(w_random, b_fix, train_x.reshape(-1, 1, 1))
