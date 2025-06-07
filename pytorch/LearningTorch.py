@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from  numpy.random import rand, randn
 import math
 
 N = 100
@@ -8,8 +7,9 @@ w = 1
 b = 2
 w1 = np.random.randn(1)
 b1 = np.random.randn(1)
-lr = 0.001
-eps = randn(N, 1)
+lr = 0.03
+eps = np.random.randn(N, 1) * 0.1 # un alto rumore potrebbe dare fastidio al modello rendendogli difficoltàa imparare
+
 
 '''
 si può vedere che con questa funzione e senza eps (epsilon)
@@ -29,7 +29,7 @@ def test(x):
     return x
 
 
-x = rand(N, 1)
+x = np.random.rand(N, 1)
 # x = test(x)
 y = x*w + b + eps
 
@@ -49,45 +49,75 @@ train_x, train_y = x[id_train], y[id_train] # input e output per il trainig
 val_x = x[id_val], y[id_val] # input e output per vedere come performa il modello dopo essere allenato
 
 
+#---------------------------
+# NET
+#---------------------------
 
 
-def foward(w1, b1):
+def foward(w1, b1, train_x):
     return w1 * train_x + b1
-    
-out = foward(w1, b1)
 
-def Backpropagation(para_w, para_b, output, para_lr=0.1):
-    error = output - train_y
+# def Backpropagation(output):
+#     error = output - train_y
+#     # calcolo della MSE mean square loss che consiste in 1/n sum(yhatn - yn)**
+#     loss = np.mean(error**2)
+#     gradW = 2 * np.mean(train_x * error) # mean sarebbe 1/len(train_x)
+#     gradQ = 2 * np.mean(error)
+
+#     return gradW, gradQ, loss
+
+def mini_batch(output, batch_id, data_x):
+    error = output - train_y[batch_id:batch_id + 10]
     # calcolo della MSE mean square loss che consiste in 1/n sum(yhatn - yn)**
-    loss = (error**2).mean()
-    print(loss)
-    gradW = 2 * (train_x * error).mean() # mean sarebbe 1/len(train_x)
-    gradQ = 2 * error.mean()
-    para_w -= lr*gradW
-    para_b -= lr*gradQ
+    loss = np.mean(error**2)
+    gradW = 2 * np.mean(data_x * error) # mean sarebbe 1/len(train_x)
+    gradQ = 2 * np.mean(error)
 
-    return para_w, para_b
+    return gradW, gradQ, loss
 
-# processo di allenamento della rete 
-for x in range(1):
+# # processo di allenamento della rete 
+# for epoch in range(7000):
 
-    print(w1, b1)
-    w1, b1 = Backpropagation(w1, b1, out, lr)
-    out = foward(w1, b1)
+#     # print(w1, b1)
+#     out = foward(w1, b1, train_x)
+#     grad_w1, grad_b1, loss = Backpropagation(out)
+#     w1 -= lr * grad_w1
+#     b1 -= lr * grad_b1
+#     print(f"Epoch {epoch}, Batch {batch_id}, Loss: {loss}, w1: {w1[0]}, b1: {b1[0]}")
 
-# plt.plot(out)
-# plt.show()
-# print(y, out)
+for epoch in range(80):
 
-def standard_deviation(features, train):
-    media = train.mean()
+    # print(w1, b1)
+    for batch_id in range(0, int(N * 0.7), 10):
+        out = foward(w1, b1, train_x[batch_id:batch_id+10])
+        grad_w1, grad_b1, loss = mini_batch(out, batch_id, train_x[batch_id:batch_id+10])
+        w1 -= lr * grad_w1
+        b1 -= lr * grad_b1
+        print(f"Epoch {epoch}, Batch {batch_id}, Loss: {loss}, w1: {w1[0]}, b1: {b1[0]}")
+
+out = foward(w1, b1, train_x)
+print(out[:10])
+print(train_y[:10])
+print(w1, b1)
+
+
+'''
+la Standardizing viene usata dopo la divisione dei dati e migliora le performance
+della rete neurale perchè tutti i valori hanno una scala molto simile migliorando
+anche la performance dei gradiant descent
+se per esempio abbiamo due features come età e salario l'età può variare tra 0 e 100 anni 
+invece il salario può variare da 500 a 5000 euro, con la Standardizing non esiste più
+questa disparità tra eta e salario in termini di valore essendo che ora variano tutti
+tra es 0 e 2500
+'''
+
+def standardize(train):
+    media = np.mean(train)
     Standardizing = np.sqrt(np.power(train - media, 2).mean())
     scale = (train - media) / Standardizing
     return scale
 
-print(standard_deviation(train_x[10], train_x))
-# plt.plot(train_x, train_y, 'bo')
-# plt.show()
+# print(standardize(train_x))
 
 w_random = np.linspace(w - 3, w + 3, 200)
 b_random = np.linspace(b - 3, b + 3, 200)
@@ -125,5 +155,5 @@ def curveGrad(w_parameter, b_parameter, data):
     plt.plot(tot_loss, linestyle='dashed')
     plt.show()
 
-# b_fix = b_random[65]
+b_fix = b_random[65]
 # curveGrad(w_random, b_fix, train_x.reshape(-1, 1, 1))

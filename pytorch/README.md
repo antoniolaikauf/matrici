@@ -9,7 +9,8 @@ $\frac{1}{n}$ * $\sum_{i=1}^{n} (yHat - y)^2$
 nella formula si eleva alla seconda cosi che non escano valori negativi
 
 Il gradiante è una derivata parziale perchè si calcola rispetto ad un singolo parametro. <br>
-Il gradiante con la curva più ripida influenzerà maggiormente la loss function
+Il gradiante con la curva più ripida influenzerà maggiormente la loss function. <br>
+Il gradiante è molto importante essendo che è grazie a questo che la rete 'impara' quindi più è piccolo il gradianete e più gli aggiornamenti saranno irrilevanti arrivando ad un punto in cui la rete smette di imparare.
 
 ### Backpropagation
 
@@ -22,3 +23,12 @@ Un learning rate troppo basso potrebbe volerci troppo per allenare il modello e 
 più la curva è ripida e più il learning rate deve essere basso, se invece è piatta 'flat' allora si può scegliere un learning rate più alto    
 
 ### LA COMBINAZIONE TRA  LEARNING RATE E GRADIANT PERMETTE L'AGGIORNAMENTO DEI PARAMETRI
+
+
+### Epoch
+
+Un Epoch sarebbe una sessione di allenamento in cui tu esegui ogni esercizio, in machine learning un epoch consiste di utilizzare tutti i dati nei passaggi: 
+- Foward
+- Calcolo la loss
+- Backpropagation
+- gradiant descent 
