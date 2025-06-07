@@ -32,3 +32,11 @@ Un Epoch sarebbe una sessione di allenamento in cui tu esegui ogni esercizio, in
 - Calcolo la loss
 - Backpropagation
 - gradiant descent 
+
+
+# Pytorch
+
+In pytorch esistono i **Tensor** che sarebbero strutture vettori, matrici o array di dimensioni superiori, i tensor hanno dimensioni che possono variare, possono avere da 0 a più dimensioni con size() e volendo anche cabiare dimensioni con view()
+
+le operazioni con i tensor possono essere eseguite con una **CPU** (computer process unit) o anche con una **GPU** (graphics process unit), con la CPU i valori vengono salvati sulla memoria principale invece con la GPU i dati vengono salvati sulla memoria dell GPU. <br>  Le GPU sono perfette per processare grandi quantità di dati essendo che sono ottime per l'elaborazione in parallelo e possono fare migliaia di operazioni in una volta sola. <br>
+Per inviare i tensor al device che si vuole allora bisogna usare il metodo **to()** gpu_tensor = torch.as_tensor(x_train).to(device) 
