@@ -101,7 +101,7 @@ class Network:
         self.bias =  [b - ((lr / len(batchs)) * newBias) for b, newBias in zip(self.bias, gradB)]
         
 
-    def SGD(self, epochs, batchSize, trainingData, learningRate,  test_data=None ):
+    def MiniBatch(self, epochs, batchSize, trainingData, learningRate,  test_data=None ):
         '''
         The "trainingdata" è una lista di elementi accoppiati "(x, y)" che rappresenta l'input 
         e il desisderato output. Come primo procedimento si mescolano gli elementi dell'array essendo 
@@ -139,5 +139,5 @@ class Network:
 # # print(net.bias)
 # # print(net.weights)
 # print(net.feedFoward(inputRete))
-# print(net.SGD(2, 3, [(1,2),(3,7)], 0.01))
+# print(net.MiniBatch(2, 3, [(1,2),(3,7)], 0.01))
 # net.updateMiniBatch(1,2)

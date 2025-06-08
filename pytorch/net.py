@@ -85,6 +85,12 @@ net = Net()
 #     b1 -= lr * grad_b1
 #     print(f"Epoch {epoch}, Loss: {loss}, w1: {w1}, b1: {b1}")
 
+'''
+i gradianti sono accumulati se si usa l'algoritmo batch gradient descent
+in cui in ogni batch si accumulano i gradianti e dopo aver finito i batch 
+si aggiornano i parametri con i gradianti accumulati
+'''
+
 for epoch in range(80):
 
     # print(w1, b1)

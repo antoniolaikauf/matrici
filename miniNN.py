@@ -25,7 +25,7 @@ def lossFunction(y):
     loss = [(y[valueId] - data_set[valueId][1])**2 for valueId in range(len(y))]
     return sum(loss)
 
-# RICORDARSI CHE I GRADIANTI SI FANNO RIFERIMENTO ALLA LOSS FUNCTION E NON A QUELLA PER OTTENERE L'OUTPUT DELLA RETE 
+# RICORDARSI CHE I GRADIANTI SI FANNO SULLA LOSS FUNCTION E NON A QUELLA PER OTTENERE L'OUTPUT DELLA RETE 
 def backPropagation(inputs, eps, w):
     output1 = [x[0] * w for x in inputs]
     loss1 = lossFunction(output1)
