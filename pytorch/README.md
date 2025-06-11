@@ -52,3 +52,18 @@ Optimizer servono per aggiornare i parametri, in pytorch ci sono vari Optimizer 
 
 N.b se il tensor si trova sulla GPU non si può trasformarlo in un array numpy con .numpy, prima bisogna portarlo sulla CPU e dopo trasformalo in un array di numpy.
 si ha un simile problema anche con tensor che hanno i gradianti e quindi prima bisogna usare il metodo .detach() e dopo .numpy()
+
+Module è la classe base to torch, se si volesse creare un proprio modello allora bisognerebbe che il proprio modello erediti le altre proprietà del modello di base 
+
+```markdown
+class ManualLinearRegression(nn.Module):
+    def __init__(self):
+        super(ManualLinearRegression, self).__init__()
+        self.b = nn.Parameter(torch.randn(1, requires_grad=True, device=device))
+        self.w = nn.Parameter(torch.randn(1, requires_grad=True, device=device))
+
+    def foward(self, x):
+        return x * self.w + self.b
+```
+
+Per ottenere tutte le Funzionalità del modello bisogna settare il .train() che permetterà di ottenere caratteristiche come il dropout o la batch normalization, permette di calcolare i gradianti 
