@@ -66,4 +66,13 @@ class ManualLinearRegression(nn.Module):
         return x * self.w + self.b
 ```
 
-Per ottenere tutte le Funzionalità del modello bisogna settare il .train() che permetterà di ottenere caratteristiche come il dropout o la batch normalization, permette di calcolare i gradianti 
+Per ottenere tutte le Funzionalità del modello bisogna settare il .train() che permetterà di ottenere caratteristiche come il dropout o la batch normalization, permette di calcolare i gradianti.
+
+## Modello
+
+Il modello in pytorch ha due stati eval() valutazione e train() addrestramento. <br>
+Nella modalità di train() il modello abilità specifici layer come il **dropout** e la **noramlization**. Nel dropout alcune connessioni vengono casualmente disabilita (con una probabilità specifica) e la noramlization in cui vengono normalizzati i dati in base alle media e varianza. Invece eval() il layer del **dropout** non viene attivato e il layer della **noramlization** viene attivato ma mai aggiornato 
+
+
+
+
