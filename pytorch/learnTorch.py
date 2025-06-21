@@ -117,6 +117,66 @@ for _ in range(epoch):
     loss_parameter.append(mean_loss) 
 # make_dot(y).render("rnn_torchviz", format='png')
 print(mlp.state_dict())
-plt.plot(loss_parameter)
-plt.plot(loss_eval)
-plt.show()
+# plt.plot(loss_parameter)
+# plt.plot(loss_eval)
+# plt.show()
+
+
+#------------------------------------
+# SALVATAGGIO DI UN MODELLO
+#------------------------------------
+
+
+check_point = {
+    'epoch' : epoch,
+    'model_state_dict': mlp.state_dict(),
+    'optimizer_state_dict': Optimizer.state_dict(),
+    'loss': loss,
+    'val_loss':loss_eval
+}
+
+torch.save(check_point, 'model_checkpoint.pth')
+
+#-------------------------------------
+# CARICAMENTO DI UN MODELLO
+#-------------------------------------
+
+model_check_point = torch.load('model_checkpoint.pth')
+
+mlp.load_state_dict(model_check_point['model_state_dict'])
+Optimizer.load_state_dict(model_check_point['optimizer_state_dict'])
+
+saved_epoch = model_check_point['epoch']
+saved_loss = model_check_point['loss']
+saved_loss_eval = model_check_point['val_loss'] 
+
+mlp.train()
+
+
+dummy_labels = torch.tensor([1.0, 0.0])
+dummy_predictions = torch.tensor([.9, .2])
+
+negative_pred = dummy_predictions[dummy_labels == 0]
+second_summation = torch.log(1 - negative_pred).sum()
+
+print(negative_pred)
+
+
+#-------------------------------------
+# loss BCEWithLogitsLoss
+#-------------------------------------
+'''
+quando un dataset è sbilanciato come in questo caso che le classi 
+positive sono inferiori alle classi negative, la BCE si una pos_weight
+che viene calcolata in base a la quantità di classi negative / le classi positive
+e serve per far pesare di più la classe positva, incvoraggiando il modello 
+a prestare attenzione a questa classe 
+'''
+loss_fn_BCEWithLogitsLoss = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([2.0]))
+
+logit = torch.tensor([0.9, -0.4, 0.3])
+y = torch.tensor([1.0, 0.0, 1.0 ])
+
+loss_BCEWithLogitsLoss = loss_fn_BCEWithLogitsLoss(logit, y)
+
+print(loss_BCEWithLogitsLoss)

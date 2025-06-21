@@ -71,7 +71,8 @@ Per ottenere tutte le Funzionalità del modello bisogna settare il .train() che 
 ## Modello
 
 Il modello in pytorch ha due stati eval() valutazione e train() addrestramento. <br>
-Nella modalità di train() il modello abilità specifici layer come il **dropout** e la **noramlization**. Nel dropout alcune connessioni vengono casualmente disabilita (con una probabilità specifica) e la noramlization in cui vengono normalizzati i dati in base alle media e varianza. Invece eval() il layer del **dropout** non viene attivato e il layer della **noramlization** viene attivato ma mai aggiornato 
+Nella modalità di train() il modello abilità specifici layer come il **dropout** e la **noramlization**. Nel dropout alcune connessioni vengono casualmente disabilita (con una probabilità specifica) e la noramlization in cui vengono normalizzati i dati in base alle media e varianza. Invece eval() il layer del **dropout** non viene attivato e il layer della **noramlization** viene attivato ma mai aggiornato. <br>
+Il modello può essere salvato per evitare che si perdano i dati dopo tot tempo che si sta allenando e questo avviene tramite **torch.save** e si salvano i parametri che si vuole epoch, lo stato del modello (parametri), la loss ecc.., per caricarlo invece si usa **torch.load** e l'optimizer e il modello si caricano con **load_state_dict()** e ricordarsi ogni volta di settarlo con train() questo se si vuole ancora allenarlo, invece se si vuole fare predizione si setta in **eval()**
 
 
 

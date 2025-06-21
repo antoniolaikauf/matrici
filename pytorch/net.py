@@ -13,11 +13,10 @@ eps = np.random.randn(N, 1) * 0.1 # un alto rumore potrebbe dare fastidio al mod
 
 '''
 si può vedere che con questa funzione e senza eps (epsilon)
-l adistribuzione dei dati è troppo uniforme e non rappresenterebbe 
-il mondo reale essendo che neò raccogliere datri c'è sempre un errore
-inoltre eps che aggiunge rumore rende il dataset più complesso
+la distribuzione dei dati è troppo uniforme e non rappresenterebbe 
+il mondo reale essendo che nel raccogliere dati c'è sempre un errore
+inoltre eps  rende il dataset più complesso
 cosi che il modello deve apprendere relazioni più complesse
-
 '''
 def test(x):
     for xId in range(len(x)):
