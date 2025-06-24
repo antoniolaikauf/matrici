@@ -23,21 +23,25 @@ class Attention(nn.Module):
         # # si inserisce dim=2 perchè lo si vuole dividere le C dimension, se si volesse dividere per batch sarebbe dim=0  
         q ,k ,v = self.c_attn(x).split(self.d_model, dim=2)
 
-class LayerNormalization(nn.Module):
-    def __init__(self):
-        super().__init__()
-
 class FFN(nn.Module):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__()
+        self.config = config
+        self.linear1 = nn.Linear(config['d_model'], config['d_model'] * 4)
+        self.relu = nn.ReLU()
+        self.linear2 = nn.Linear(config['d_model'] * 4, config['d_model'])
 
+    def forward(self, x):
+        # eseguita prima funzione lineare --> eseguita RELU che fornisce la non linearità --> eseguita la seconda funzione lineare
+        return self.linear2(self.relu(self.linear1(x)))
+    
 class Block(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.layer_norm1 = LayerNormalization()
+        self.layer_norm1 = nn.LayerNorm(config['d_model']) # si passa dentro la diomensione su cui si vuole fare la normalizzazione
         self.attention = Attention(config)
-        self.layer_norm2 = LayerNormalization()
-        self.ffn = FFN
+        self.layer_norm2 = nn.LayerNorm(config['d_model'])
+        self.ffn = FFN(config)
 
     def forward(self, x):
         # in questo caso qua si sta facendo una pre-LN che consiste di normalizzare gli input prima di passarli dentro al sublayer
@@ -71,11 +75,20 @@ class miniGPT(nn.Module):
         return n_params
 
     def forward(self, x):
-        pass
+        # si ottiene la dimensione del tensor
+        batch, token = x.size()
+        position_token = torch.arange(0, token, dtype=torch.long)
+        # si inserisce i valori per ottenere i vettori dei token 
+        token_embedding = self.transformer.w_token_embedding(x)
+        # si inserisce le posizioni dei token 
+        position_embedding = self.transformer.w_position_embedding(position_token)
+        # x = token_embedding + position_embedding
+        
 
 
 m = miniGPT(configGPT)
-m("qua si passerà l'intero batch ")
-print(m(torch.tensor(10)))
+# m("qua si passerà l'intero batch ")
+print(m(torch.randint(0, 6, (2,8))))
+
 print(m.get_params())
 print(configGPT['vocab_size'])
