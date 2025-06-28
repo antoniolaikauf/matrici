@@ -105,7 +105,9 @@ class miniGPT(nn.Module):
         sarà [0.2, 2, 1.5, -1.3, 3] una volta uscitra dalla softmax sarà softmax([0.2, 2, 1.5, -1.3, 3]) ≈ [0.11, 0.12, 0.13, 0.14, 0.52]
         e quindi si prenderà 0.52 che rappresenta stai nel vocabolario
         '''
+        
         self.linear = nn.Linear(config['d_model'], config['vocab_size']) 
+        self.softmax = nn.Softmax(dim=-1)
 
     def get_params(self):
 
@@ -135,12 +137,13 @@ class miniGPT(nn.Module):
             x = block(x)
         
         logits = self.linear(x)
-        return logits.size()
-
+        last_token = logits[-1:,-1:,:] 
+        return self.softmax(last_token)
+       
 
 m = miniGPT(configGPT)
 # m("qua si passerà l'intero batch ")
 print(m(torch.randint(0, 6, (2,8))))
 
-print(m.get_params())
-print(configGPT['vocab_size'])
+# print(m.get_params())
+# print(configGPT['vocab_size'])
