@@ -81,6 +81,31 @@ class miniGPT(nn.Module):
             w_position_embedding = nn.Embedding(config['contex_window'], config['d_model']),
             block = nn.ModuleList([Block(config) for _ in range(config['n_layer'])])
         ))
+        
+        '''
+        questa ultima linearizzazione è importante essendo che trasforma l'output che ora ha dimnsioni 
+        (B, T, C) in (B, vocab_size) questo avviene tramite dei pesi.
+        Da questi logits viene preso solo quello dell'ultimo token perchè è da quello
+        che si predirrà il token successivo 
+        es.
+        vocabolario:
+        0: "ciao"
+
+        1: "come"
+
+        2: "Mondo"
+
+        3: "bene"
+
+        4: "stai"
+
+        la frase è 'ciao mondo come' e si deve prevedere il token successivo stai
+        ora si ha un output di dimensioni (1, 3, 5) dopo aver fatto la linearizzazione 
+        ma l'input da inserire dentro aalla softmax è solo quello dell'ultimo token che
+        sarà [0.2, 2, 1.5, -1.3, 3] una volta uscitra dalla softmax sarà softmax([0.2, 2, 1.5, -1.3, 3]) ≈ [0.11, 0.12, 0.13, 0.14, 0.52]
+        e quindi si prenderà 0.52 che rappresenta stai nel vocabolario
+        '''
+        self.linear = nn.Linear(config['d_model'], config['vocab_size']) 
 
     def get_params(self):
 
@@ -109,7 +134,8 @@ class miniGPT(nn.Module):
         for block in self.transformer['block']:
             x = block(x)
         
-        return x.size()
+        logits = self.linear(x)
+        return logits.size()
 
 
 m = miniGPT(configGPT)
