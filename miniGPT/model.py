@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 from prepare import vocab_size
+import math
 
 configGPT = {
     'n_head' : 8,
@@ -13,15 +14,36 @@ configGPT = {
 class Attention(nn.Module):
     def __init__(self, config):
         super().__init__()
+        assert config['d_model'] % config['n_head'] == 0
         # si calcolano le Q, K, V tramite una trasformazione lineare per migliorare la computazione/efficienza
         self.c_attn = nn.Linear(config['d_model'], config['d_model'] * 3)
         self.n_head = config['n_head']
         self.d_model = config['d_model']
+        self.config = config
+        self.softmax = nn.Softmax(dim=-1)
         
     def forward(self, x):
+        B, T, C = x.size() 
         # self.c_attn ha dimensioni B, T, C          B = batch dimesion  T = quantità di token  C = d_model * 3 che sarebbero le query key value
         # # si inserisce dim=2 perchè lo si vuole dividere le C dimension, se si volesse dividere per batch sarebbe dim=0  
         q ,k ,v = self.c_attn(x).split(self.d_model, dim=2)
+
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_q)
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_k)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_v)
+
+        att = (q @ k.transpose(2, 3)) / (math.sqrt(k.size(-1)))
+        att = self.softmax(att) # softmax la si esegue sull'ultima dimensione
+        y = att @ v
+
+        # contiguous viene usata quando ci sono cambiamenti dell'organizzazione dei dati
+        # pèerchè durante i cambiamenti dell'organizzazione dei dati questi vedi immagine contiguous.png per capire
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+
+        return y
+
+
+
 
 class FFN(nn.Module):
     def __init__(self, config):
@@ -82,8 +104,12 @@ class miniGPT(nn.Module):
         token_embedding = self.transformer.w_token_embedding(x)
         # si inserisce le posizioni dei token 
         position_embedding = self.transformer.w_position_embedding(position_token)
-        # x = token_embedding + position_embedding
+        x = token_embedding + position_embedding
+
+        for block in self.transformer['block']:
+            x = block(x)
         
+        return x.size()
 
 
 m = miniGPT(configGPT)
