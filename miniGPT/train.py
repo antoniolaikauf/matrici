@@ -1,5 +1,15 @@
-from prepare import train_data, val_data
+from prepare import train_data, val_data, vocab_size
 import torch
+from model import miniGPT
+
+
+configGPT = {
+    'n_head' : 8,
+    'd_model' : 512, 
+    'vocab_size' : vocab_size,
+    'n_layer' : 6,
+    'contex_window': 8 
+}
 
 content_window = 8
 batch = 4
@@ -13,4 +23,10 @@ def get_batch(mode):
 
     return x, y
 
-print(get_batch('train'))
+x, y = get_batch('train')
+
+m = miniGPT(configGPT)
+# m("qua si passerà l'intero batch ")
+loss, logits = m(x, y)
+loss.backward()
+print(loss)

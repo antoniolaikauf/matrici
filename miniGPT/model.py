@@ -2,6 +2,7 @@ from torch import nn
 import torch
 from prepare import vocab_size
 import math
+from torch.nn import functional as F
 
 configGPT = {
     'n_head' : 8,
@@ -83,6 +84,7 @@ class miniGPT(nn.Module):
         ))
         
         '''
+        questo avviene solo durante l'inferenza e non durante l'addestramento 
         questa ultima linearizzazione è importante essendo che trasforma l'output che ora ha dimnsioni 
         (B, T, C) in (B, vocab_size) questo avviene tramite dei pesi.
         Da questi logits viene preso solo quello dell'ultimo token perchè è da quello
@@ -123,7 +125,7 @@ class miniGPT(nn.Module):
         n_params -= n_params_position_embedding
         return n_params
 
-    def forward(self, x):
+    def forward(self, x, target):
         # si ottiene la dimensione del tensor
         batch, token = x.size()
         position_token = torch.arange(0, token, dtype=torch.long)
@@ -136,14 +138,28 @@ class miniGPT(nn.Module):
         for block in self.transformer['block']:
             x = block(x)
         
-        logits = self.linear(x)
-        last_token = logits[-1:,-1:,:] 
-        return self.softmax(last_token)
+        logits = self.linear(x)  # Forma: (batch, token, vocab_size), cioè (B, T, C)
+        B, T, C = logits.size()
+
+        # la cross_entropy fa gia di suo internamente una softmax
+        # last_token = logits[:,-1,:]
+        # softmax = self.softmax(last_token)
+
+        '''
+        la loss viene calcolata per la predizione del token successivo dopo che si fa la softmax 
+        e si calcolano la predizzione su vocab_size, quale token prendere viene dato da il target
+        quindi se noi abbiamo elaborato un token 'ciao' e dobbiamo prevedere il target 'come'
+        il token ciao avrà prodotto un vettore di probabilità [0.2, 0.3, 2]
+        se 'come' ha indice 3 allora si prende 0.3 e si farà la formula di immagine Cross_entropy_loss_2 e Cross_entropy_loss
+        '''
+        loss = F.cross_entropy(logits.view(B*T, C), target.view(B*T))
+
+        return loss, logits
        
 
-m = miniGPT(configGPT)
+# m = miniGPT(configGPT)
 # m("qua si passerà l'intero batch ")
-print(m(torch.randint(0, 6, (2,8))))
+# print(m(torch.randint(0, 6, (2,8))))
 
 # print(m.get_params())
 # print(configGPT['vocab_size'])
