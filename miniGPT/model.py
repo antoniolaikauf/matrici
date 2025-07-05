@@ -9,7 +9,7 @@ configGPT = {
     'd_model' : 512, 
     'vocab_size' : vocab_size,
     'n_layer' : 6,
-    'contex_window': 8 
+    'contex_size': 8 
 }
 
 class Attention(nn.Module):
@@ -18,6 +18,8 @@ class Attention(nn.Module):
         assert config['d_model'] % config['n_head'] == 0
         # si calcolano le Q, K, V tramite una trasformazione lineare per migliorare la computazione/efficienza
         self.c_attn = nn.Linear(config['d_model'], config['d_model'] * 3)
+        # i pesi vengono scalati in base a quante residual connection si ha 
+        self.c_attn.weight.data = self.c_attn.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
         self.n_head = config['n_head']
         self.d_model = config['d_model']
         self.config = config
@@ -44,8 +46,6 @@ class Attention(nn.Module):
         return y
 
 
-
-
 class FFN(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -53,6 +53,8 @@ class FFN(nn.Module):
         self.linear1 = nn.Linear(config['d_model'], config['d_model'] * 4)
         self.relu = nn.ReLU()
         self.linear2 = nn.Linear(config['d_model'] * 4, config['d_model'])
+        self.linear1.weight.data = self.linear1.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
+        self.linear2.weight.data = self.linear2.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
 
     def forward(self, x):
         # eseguita prima funzione lineare --> eseguita RELU che fornisce la non linearità --> eseguita la seconda funzione lineare
@@ -61,15 +63,17 @@ class FFN(nn.Module):
 class Block(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.layer_norm1 = nn.LayerNorm(config['d_model']) # si passa dentro la diomensione su cui si vuole fare la normalizzazione
+        # nel layer normalizzazione quando si normalizza il tensor x il risulato non cambia 
+        self.layer_norm1 = nn.LayerNorm(config['d_model']) # si passa dentro la dimensione su cui si vuole fare la normalizzazione
         self.attention = Attention(config)
         self.layer_norm2 = nn.LayerNorm(config['d_model'])
         self.ffn = FFN(config)
 
     def forward(self, x):
         # in questo caso qua si sta facendo una pre-LN che consiste di normalizzare gli input prima di passarli dentro al sublayer
-        # nel paper attention is all you need si us auna post-LN 
+        # nel paper attention is all you need si usa una post-LN 
         x = x + self.attention(self.layer_norm1(x))
+        # TODO qua nel paper hanno messo un altro layer normalization
         x = x + self.ffn(self.layer_norm2(x))
 
         return x
@@ -79,7 +83,7 @@ class miniGPT(nn.Module):
         self.config = config
         self.transformer = nn.ModuleDict(dict(
             w_token_embedding = nn.Embedding(config['vocab_size'], config['d_model']),
-            w_position_embedding = nn.Embedding(config['contex_window'], config['d_model']),
+            w_position_embedding = nn.Embedding(config['contex_size'], config['d_model']), # non si sta usando la sinusoide position encoding ma si sta usando la absolute position encoding (apprendibile)
             block = nn.ModuleList([Block(config) for _ in range(config['n_layer'])])
         ))
         
@@ -101,11 +105,11 @@ class miniGPT(nn.Module):
 
         4: "stai"
 
-        la frase è 'ciao mondo come' e si deve prevedere il token successivo stai
-        ora si ha un output di dimensioni (1, 3, 5) dopo aver fatto la linearizzazione 
-        ma l'input da inserire dentro aalla softmax è solo quello dell'ultimo token che
-        sarà [0.2, 2, 1.5, -1.3, 3] una volta uscitra dalla softmax sarà softmax([0.2, 2, 1.5, -1.3, 3]) ≈ [0.11, 0.12, 0.13, 0.14, 0.52]
-        e quindi si prenderà 0.52 che rappresenta stai nel vocabolario
+        la frase è 'ciao mondo come' e si deve prevedere il token successivo 'stai'
+        ora si ha un output di dimensioni (1, 3, 5) dopo aver fatto la linearizzazione.
+        L'input da inserire dentro alla softmax è solo quello dell'ultimo token che
+        sarà [0.2, 2, 1.5, -1.3, 3] una volta uscita dalla softmax sarà softmax([0.2, 2, 1.5, -1.3, 3]) ≈ [0.11, 0.12, 0.13, 0.14, 0.52]
+        e quindi si prenderà 0.52 che rappresenta 'stai' nel vocabolario
         '''
         
         self.linear = nn.Linear(config['d_model'], config['vocab_size']) 
@@ -150,7 +154,7 @@ class miniGPT(nn.Module):
         e si calcolano la predizzione su vocab_size, quale token prendere viene dato da il target
         quindi se noi abbiamo elaborato un token 'ciao' e dobbiamo prevedere il target 'come'
         il token ciao avrà prodotto un vettore di probabilità [0.2, 0.3, 2]
-        se 'come' ha indice 3 allora si prende 0.3 e si farà la formula di immagine Cross_entropy_loss_2 e Cross_entropy_loss
+        se 'come' ha indice 1 allora si prende 0.3 e si farà la formula di immagine Cross_entropy_loss_2 e Cross_entropy_loss
         '''
         loss = F.cross_entropy(logits.view(B*T, C), target.view(B*T))
 

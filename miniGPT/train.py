@@ -8,7 +8,7 @@ configGPT = {
     'd_model' : 512, 
     'vocab_size' : vocab_size,
     'n_layer' : 6,
-    'contex_window': 8 
+    'contex_size': 8 
 }
 
 content_window = 8

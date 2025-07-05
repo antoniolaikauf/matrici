@@ -172,6 +172,10 @@ La funzione di costo è:
 
 Un valore basso come **0.0004** indica che il modello è ben ottimizzato.
 
+In base all'architettura bisogna utilizzare una loss appropriata: <br>
+Per modelli di linear regression si utilizza la **mean square loss** (msl), per modelli di classificazione si usa la **binary cross-entropy**
+o anche **log loss**
+
 ## Discesa del Gradiente
 
 La tecnica della **discesa del gradiente** (gradient descent) viene utilizzata per trovare i valori di **pesi** e **bias** che minimizzano la funzione di costo. Questo processo iterativo regola gradualmente i parametri per ottenere una funzione di costo più bassa possibile. 
@@ -410,7 +414,7 @@ ci possono  essere più approcci:
   e il risultato tra TF e IDF sarà il risultato della parola 
   questo porterà parole che hanno un simile significato vicine tra di loro 
   il problema con questo approccio è che non cattura la relazione che ha con le altre parole, ma si basa sulla frequenza dei termini 
-- **word2vec** sarebbe una rete neurale che crea i vettori per le parole, questi vettori rappresentano il significato delle parole nel loro contesto in un testo, nell a frase il cane mangia il cibo le parole cane mangia e cibo sono vicine, se dopo in un altra frase compare il gatto mangia allora il modello deduce che cane e gatto sono simili essendo che nel contesto entrambi mangiano  ci possono essere due approcci:
+- **word2vec** sarebbe una rete neurale che crea i vettori per le parole, questi vettori rappresentano il significato delle parole nel loro contesto in un testo, nella frase il cane mangia il cibo le parole cane mangia e cibo sono vicine, se dopo in un altra frase compare il gatto mangia allora il modello deduce che cane e gatto sono simili essendo che nel contesto entrambi mangiano ci possono essere due approcci:
   - **CBOW (Continuous Bag of Words)** in cui prevede una parola target basandosi sulle parole del contesto circostante (le parole vicine)
   - **Skip-gram** da una singola parola prevede le altre parole circostanti <br>
   
@@ -423,7 +427,7 @@ ci possono  essere più approcci:
   - Encoder: uno stack di trasformers con la **self-attention**
   - Task-head: prende i vettori dell'encoder e li trasforma in un output specifico per il compito 
 
-  BERT ha preso spunto dal paper **attention is all you need** dalla archittetura del transformers e a differenza di word2vec che per ogni parola ha un singolo vettore BERT ha un vettore per ogni singola parola ma se quella parola viene usata in un altra frase diversa allor ail suo vettore cambia. <br>
+  BERT ha preso spunto dal paper **attention is all you need** dalla archittetura del transformers e a differenza di word2vec che per ogni parola ha un singolo vettore BERT ha un vettore per ogni singola parola ma se quella parola viene usata in un altra frase diversa allora il suo vettore cambia. <br>
   I vettori dei token vengono inizializzati nell'embedding ma dopo nell'encoder vengono modificati in base alle altre parole
 
   TF-IDF non crea embeding ma vettori sparsi che si basano sulla frequenza della parola e non cattura nessun significato 
