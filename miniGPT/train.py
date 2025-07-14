@@ -2,10 +2,9 @@ from prepare import train_data, val_data, vocab_size
 import torch
 from model import miniGPT
 
-
 configGPT = {
     'n_head' : 8,
-    'd_model' : 512, 
+    'n_embd' : 512, 
     'vocab_size' : vocab_size,
     'n_layer' : 6,
     'contex_size': 8 
@@ -23,10 +22,16 @@ def get_batch(mode):
 
     return x, y
 
-x, y = get_batch('train')
 
 m = miniGPT(configGPT)
-# m("qua si passerà l'intero batch ")
-loss, logits = m(x, y)
-loss.backward()
-print(loss)
+optimizer = torch.optim.SGD(m.parameters(), lr=0.01, momentum=0.9)
+
+for x in range(1):
+    optimizer.zero_grad()
+    x, y = get_batch('train')
+    loss, logits = m(x, y)
+    loss.backward()
+    optimizer.step()
+    print(loss)
+
+# creare la mask dopo il prodotto scalare tra Q x K si ha una matrice T x T e si applica prima della softmax

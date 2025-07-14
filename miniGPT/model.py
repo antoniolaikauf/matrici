@@ -6,7 +6,7 @@ from torch.nn import functional as F
 
 configGPT = {
     'n_head' : 8,
-    'd_model' : 512, 
+    'n_embd' : 512, 
     'vocab_size' : vocab_size,
     'n_layer' : 6,
     'contex_size': 8 
@@ -15,27 +15,44 @@ configGPT = {
 class Attention(nn.Module):
     def __init__(self, config):
         super().__init__()
-        assert config['d_model'] % config['n_head'] == 0
+        assert config['n_embd'] % config['n_head'] == 0
         # si calcolano le Q, K, V tramite una trasformazione lineare per migliorare la computazione/efficienza
-        self.c_attn = nn.Linear(config['d_model'], config['d_model'] * 3)
+        self.c_attn = nn.Linear(config['n_embd'], config['n_embd'] * 3)
         # i pesi vengono scalati in base a quante residual connection si ha 
         self.c_attn.weight.data = self.c_attn.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
         self.n_head = config['n_head']
-        self.d_model = config['d_model']
+        self.n_embd = config['n_embd']
         self.config = config
         self.softmax = nn.Softmax(dim=-1)
         
     def forward(self, x):
-        B, T, C = x.size() 
-        # self.c_attn ha dimensioni B, T, C          B = batch dimesion  T = quantità di token  C = d_model * 3 che sarebbero le query key value
+        B, T, C = x.size()
+        # self.c_attn ha dimensioni B, T, C          B = batch dimesion  T = quantità di token  C = n_embd * 3 che sarebbero le query key value
         # # si inserisce dim=2 perchè lo si vuole dividere le C dimension, se si volesse dividere per batch sarebbe dim=0  
-        q ,k ,v = self.c_attn(x).split(self.d_model, dim=2)
+        q ,k ,v = self.c_attn(x).split(self.n_embd, dim=2)
 
         q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_q)
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_k)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_v)
 
-        att = (q @ k.transpose(2, 3)) / (math.sqrt(k.size(-1)))
+        att = (q @ k.transpose(2, 3)) / (math.sqrt(k.size(-1))) # forma: (batch, n_head, token, token)
+        '''
+        0 è la diagonale principale  se si volesse far si che non passasse per la diagonale principale allora si modifica quel parametro
+        es. diagonal = 0 
+        [1,0,0]
+        [1,1,0]
+        [1,1,1]
+        es. diagonal = 1
+        [1,1,0]
+        [1,1,1]
+        [1,1,1]
+        perchè 'sbloccherebbe' il valore della prima row e posizione 1 e man mano aumenta quel valore in 2, 3 e cosi via
+        ''' 
+        mask = torch.tril(torch.ones(T, T), diagonal=0).bool()
+        
+        # Applicazione della maschera ai punteggi di attenzione ovunque si ha nella maschera False allora si mette -inf
+        att = att.masked_fill(mask == False, -float('inf'))
+        # print(att[0][0])
         att = self.softmax(att) # softmax la si esegue sull'ultima dimensione
         y = att @ v
 
@@ -50,30 +67,33 @@ class FFN(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.linear1 = nn.Linear(config['d_model'], config['d_model'] * 4)
+        self.linear1 = nn.Linear(config['n_embd'], config['n_embd'] * 4)
         self.relu = nn.ReLU()
-        self.linear2 = nn.Linear(config['d_model'] * 4, config['d_model'])
+        self.linear2 = nn.Linear(config['n_embd'] * 4, config['n_embd'])
         self.linear1.weight.data = self.linear1.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
         self.linear2.weight.data = self.linear2.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
 
     def forward(self, x):
         # eseguita prima funzione lineare --> eseguita RELU che fornisce la non linearità --> eseguita la seconda funzione lineare
-        return self.linear2(self.relu(self.linear1(x)))
+        x = self.linear1(x)
+        x = self.relu(x)
+        x = self.linear2(x)
+
+        return x
     
 class Block(nn.Module):
     def __init__(self, config):
         super().__init__()
         # nel layer normalizzazione quando si normalizza il tensor x il risulato non cambia 
-        self.layer_norm1 = nn.LayerNorm(config['d_model']) # si passa dentro la dimensione su cui si vuole fare la normalizzazione
+        self.layer_norm1 = nn.LayerNorm(config['n_embd']) # si passa dentro la dimensione su cui si vuole fare la normalizzazione
         self.attention = Attention(config)
-        self.layer_norm2 = nn.LayerNorm(config['d_model'])
+        self.layer_norm2 = nn.LayerNorm(config['n_embd'])
         self.ffn = FFN(config)
 
     def forward(self, x):
         # in questo caso qua si sta facendo una pre-LN che consiste di normalizzare gli input prima di passarli dentro al sublayer
         # nel paper attention is all you need si usa una post-LN 
         x = x + self.attention(self.layer_norm1(x))
-        # TODO qua nel paper hanno messo un altro layer normalization
         x = x + self.ffn(self.layer_norm2(x))
 
         return x
@@ -82,9 +102,12 @@ class miniGPT(nn.Module):
         super().__init__()
         self.config = config
         self.transformer = nn.ModuleDict(dict(
-            w_token_embedding = nn.Embedding(config['vocab_size'], config['d_model']),
-            w_position_embedding = nn.Embedding(config['contex_size'], config['d_model']), # non si sta usando la sinusoide position encoding ma si sta usando la absolute position encoding (apprendibile)
-            block = nn.ModuleList([Block(config) for _ in range(config['n_layer'])])
+            w_token_embedding = nn.Embedding(config['vocab_size'], config['n_embd']),
+            w_position_embedding = nn.Embedding(config['contex_size'], config['n_embd']), # non si sta usando la sinusoide position encoding ma si sta usando la absolute position encoding (apprendibile)
+            # h = hidden
+            h = nn.ModuleList([Block(config) for _ in range(config['n_layer'])]),
+            # qua nel paper hanno messo un altro layer normalization
+            ln_f = nn.LayerNorm(config['n_embd']),
         ))
         
         '''
@@ -112,7 +135,7 @@ class miniGPT(nn.Module):
         e quindi si prenderà 0.52 che rappresenta 'stai' nel vocabolario
         '''
         
-        self.linear = nn.Linear(config['d_model'], config['vocab_size']) 
+        self.linear = nn.Linear(config['n_embd'], config['vocab_size'], bias=False) 
         self.softmax = nn.Softmax(dim=-1)
 
     def get_params(self):
@@ -139,13 +162,15 @@ class miniGPT(nn.Module):
         position_embedding = self.transformer.w_position_embedding(position_token)
         x = token_embedding + position_embedding
 
-        for block in self.transformer['block']:
+        for block in self.transformer.h:
             x = block(x)
         
+        logits = self.transformer.ln_f(x)
+
         logits = self.linear(x)  # Forma: (batch, token, vocab_size), cioè (B, T, C)
+        # Forma: (batch, token, vocab_size) si ha questa forma essendo che si deve prevedere il token successivo su tutti i possibili token 
         B, T, C = logits.size()
 
-        # la cross_entropy fa gia di suo internamente una softmax
         # last_token = logits[:,-1,:]
         # softmax = self.softmax(last_token)
 
@@ -156,6 +181,8 @@ class miniGPT(nn.Module):
         il token ciao avrà prodotto un vettore di probabilità [0.2, 0.3, 2]
         se 'come' ha indice 1 allora si prende 0.3 e si farà la formula di immagine Cross_entropy_loss_2 e Cross_entropy_loss
         '''
+
+        # la cross_entropy fa gia di suo internamente una softmax
         loss = F.cross_entropy(logits.view(B*T, C), target.view(B*T))
 
         return loss, logits
