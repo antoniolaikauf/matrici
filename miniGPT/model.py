@@ -23,7 +23,7 @@ class Attention(nn.Module):
         self.n_head = config['n_head']
         self.n_embd = config['n_embd']
         self.config = config
-        self.softmax = nn.Softmax(dim=-1)
+        self.softmax = nn.Softmax(dim=-1) # softmax la si esegue sull'ultima dimensione
         
     def forward(self, x):
         B, T, C = x.size()
@@ -48,12 +48,13 @@ class Attention(nn.Module):
         [1,1,1]
         perchè 'sbloccherebbe' il valore della prima row e posizione 1 e man mano aumenta quel valore in 2, 3 e cosi via
         ''' 
+        # creare la mask dopo il prodotto scalare tra Q x K si ha una matrice T x T e si applica prima della softmax
         mask = torch.tril(torch.ones(T, T), diagonal=0).bool()
         
         # Applicazione della maschera ai punteggi di attenzione ovunque si ha nella maschera False allora si mette -inf
         att = att.masked_fill(mask == False, -float('inf'))
         # print(att[0][0])
-        att = self.softmax(att) # softmax la si esegue sull'ultima dimensione  forma : (batch, n_head, token, token)
+        att = self.softmax(att) # forma : (batch, n_head, token, token)
         y = att @ v
         
         '''

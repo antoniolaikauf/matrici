@@ -1,7 +1,11 @@
 from prepare import train_data, val_data, vocab_size, n
 import torch
-from model import miniGPT
+from model import miniGPT , configGPT
 import matplotlib.pyplot as plt
+
+learning_rate = 6e-4 # max learning rate
+min_lr = 6e-5 # minimum learning rate, should be ~= learning_rate/10 per Chinchilla
+warmup_iters = 2000 # how many steps to warm up for
 
 content_window = 8 # quantità token inseriti all'interno del modello
 batch = 4
@@ -10,14 +14,6 @@ amount_batch = n // batch # quantità totale di batch per ogni epoch
 
 max_iters = 600000 # total number of training iterations
 iter_num = 0 # numero attuale di iterazione
-
-configGPT = {
-    'n_head' : 8,
-    'n_embd' : 512, 
-    'vocab_size' : vocab_size,
-    'n_layer' : 6,
-    'contex_size': 8 
-}
 
 def get_batch(mode):
     if mode == 'train': data = train_data
@@ -28,11 +24,16 @@ def get_batch(mode):
 
     return x, y
 
+# warmup learning rate e Cosine decay implementare
+def get_lr(iteration):
+    if iteration < warmup_iters: 
+        return learning_rate * (iteration + 1) / (warmup_iters + 1)
 
 m = miniGPT(configGPT)
-optimizer = torch.optim.SGD(m.parameters(), lr=0.0003, momentum=0.9)
+num_parameters = m.get_params()
+print(f"numero totale dei parametri del modello: {num_parameters}")
+optimizer = torch.optim.SGD(m.parameters(), lr=learning_rate, momentum=0.9)
 loss_array = []
-
 
 # questo tipo di allenamento con epoch viene usato di solito con piccoli dataset
 '''
@@ -51,17 +52,25 @@ for id_epoch in range(epoch):
 '''
 
 # loop di allenamento
-
 X, Y = get_batch("train")
 
 while True:
+
+    lr = get_lr(iter_num)
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = lr
+
     loss, logit = m(X, Y)
+
     print(f"step: {iter_num}, Loss: {loss}")
+
     loss_array.append(loss.data)
     X, Y = get_batch("train")
     loss.backward()
+
     optimizer.step()
     optimizer.zero_grad()
+
     iter_num += 1
 
     if iter_num > max_iters:
@@ -73,4 +82,3 @@ plt.xlabel("id_batch")
 plt.ylabel("Loss")
 plt.plot(loss_array)
 plt.show()
-# creare la mask dopo il prodotto scalare tra Q x K si ha una matrice T x T e si applica prima della softmax
