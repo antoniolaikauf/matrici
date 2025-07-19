@@ -53,8 +53,17 @@ class Attention(nn.Module):
         # Applicazione della maschera ai punteggi di attenzione ovunque si ha nella maschera False allora si mette -inf
         att = att.masked_fill(mask == False, -float('inf'))
         # print(att[0][0])
-        att = self.softmax(att) # softmax la si esegue sull'ultima dimensione
+        att = self.softmax(att) # softmax la si esegue sull'ultima dimensione  forma : (batch, n_head, token, token)
         y = att @ v
+        
+        '''
+        y forma : (batch, n_head, token, d_v) 
+
+        [1_att * v_1, 1_att * v_2 ... 1_att * v_64] 
+        [2_att * v_1, 2_att * v_2 ... 2_att * v_64]
+        ...
+        [8_att * v_1, 8_att * v_2 ... 8_att * v_64] 
+        '''
 
         # contiguous viene usata quando ci sono cambiamenti dell'organizzazione dei dati
         # pèerchè durante i cambiamenti dell'organizzazione dei dati questi vedi immagine contiguous.png per capire

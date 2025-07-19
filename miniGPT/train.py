@@ -1,6 +1,15 @@
-from prepare import train_data, val_data, vocab_size
+from prepare import train_data, val_data, vocab_size, n
 import torch
 from model import miniGPT
+import matplotlib.pyplot as plt
+
+content_window = 8 # quantità token inseriti all'interno del modello
+batch = 4
+epoch = 1
+amount_batch = n // batch # quantità totale di batch per ogni epoch
+
+max_iters = 600000 # total number of training iterations
+iter_num = 0 # numero attuale di iterazione
 
 configGPT = {
     'n_head' : 8,
@@ -9,9 +18,6 @@ configGPT = {
     'n_layer' : 6,
     'contex_size': 8 
 }
-
-content_window = 8
-batch = 4
 
 def get_batch(mode):
     if mode == 'train': data = train_data
@@ -24,14 +30,47 @@ def get_batch(mode):
 
 
 m = miniGPT(configGPT)
-optimizer = torch.optim.SGD(m.parameters(), lr=0.01, momentum=0.9)
+optimizer = torch.optim.SGD(m.parameters(), lr=0.0003, momentum=0.9)
+loss_array = []
 
-for x in range(1):
-    optimizer.zero_grad()
-    x, y = get_batch('train')
-    loss, logits = m(x, y)
+
+# questo tipo di allenamento con epoch viene usato di solito con piccoli dataset
+'''
+
+for id_epoch in range(epoch):
+    for id_batch in range(amount_batch):
+        x, y = get_batch("train")
+        loss, logits = m(x, y)
+        loss.backward()
+        loss_array.append(loss.data)
+        print(loss)
+        optimizer.step()
+        optimizer.zero_grad()
+        
+    print(f"eseguito batch numero: {id_epoch}")
+'''
+
+# loop di allenamento
+
+X, Y = get_batch("train")
+
+while True:
+    loss, logit = m(X, Y)
+    print(f"step: {iter_num}, Loss: {loss}")
+    loss_array.append(loss.data)
+    X, Y = get_batch("train")
     loss.backward()
     optimizer.step()
-    print(loss)
+    optimizer.zero_grad()
+    iter_num += 1
 
+    if iter_num > max_iters:
+        break
+
+plt.axis((0, amount_batch, 0, loss_array[0]))
+plt.title("loss Function")
+plt.xlabel("id_batch")
+plt.ylabel("Loss")
+plt.plot(loss_array)
+plt.show()
 # creare la mask dopo il prodotto scalare tra Q x K si ha una matrice T x T e si applica prima della softmax
