@@ -78,15 +78,17 @@ class FFN(nn.Module):
         super().__init__()
         self.config = config
         self.linear1 = nn.Linear(config['n_embd'], config['n_embd'] * 4)
-        self.relu = nn.ReLU()
+        # non si vuole fare relu perchè con relu i valori che sono negativi vengono azzerati e quindi il gradiante non viene aggiornato essendo che il neurone è spento,
+        # e si rischia che quel neurone non impari mai, quindi si utilizza GELU in fino ad una certa soglia i neuroni che sono minori di 0 non vengono azzerati 
+        self.gelu = nn.GELU() 
         self.linear2 = nn.Linear(config['n_embd'] * 4, config['n_embd'])
         self.linear1.weight.data = self.linear1.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
         self.linear2.weight.data = self.linear2.weight.data * (1 / math.sqrt(config['n_layer'] * 2))
 
     def forward(self, x):
-        # eseguita prima funzione lineare --> eseguita RELU che fornisce la non linearità --> eseguita la seconda funzione lineare
+        # eseguita prima funzione lineare --> eseguita GELU che fornisce la non linearità --> eseguita la seconda funzione lineare
         x = self.linear1(x)
-        x = self.relu(x)
+        x = self.gelu(x)
         x = self.linear2(x)
 
         return x
@@ -146,7 +148,6 @@ class miniGPT(nn.Module):
         '''
         
         self.linear = nn.Linear(config['n_embd'], config['vocab_size'], bias=False) 
-        self.softmax = nn.Softmax(dim=-1)
 
     def get_params(self):
 
@@ -164,8 +165,8 @@ class miniGPT(nn.Module):
 
     def forward(self, x, target):
         # si ottiene la dimensione del tensor
-        batch, token = x.size()
-        position_token = torch.arange(0, token, dtype=torch.long)
+        B, T = x.size()
+        position_token = torch.arange(0, T, dtype=torch.long)
         # si inserisce i valori per ottenere i vettori dei token 
         token_embedding = self.transformer.w_token_embedding(x)
         # si inserisce le posizioni dei token 
@@ -180,10 +181,7 @@ class miniGPT(nn.Module):
         logits = self.linear(x)  # Forma: (batch, token, vocab_size), cioè (B, T, C)
         # Forma: (batch, token, vocab_size) si ha questa forma essendo che si deve prevedere il token successivo su tutti i possibili token 
         B, T, C = logits.size()
-
-        # last_token = logits[:,-1,:]
-        # softmax = self.softmax(last_token)
-
+    
         '''
         la loss viene calcolata per la predizione del token successivo dopo che si fa la softmax 
         e si calcolano la predizzione su vocab_size, quale token prendere viene dato da il target
