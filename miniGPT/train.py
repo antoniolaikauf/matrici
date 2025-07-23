@@ -2,10 +2,12 @@ from prepare import train_data, val_data, vocab_size, n
 import torch
 from model import miniGPT , configGPT
 import matplotlib.pyplot as plt
+import math
 
 learning_rate = 6e-4 # max learning rate
 min_lr = 6e-5 # minimum learning rate, should be ~= learning_rate/10 per Chinchilla
 warmup_iters = 2000 # how many steps to warm up for
+lr_decay_iters = 600000 # should be ~= max_iters per Chinchilla
 
 content_window = 8 # quantità token inseriti all'interno del modello
 batch = 4
@@ -26,8 +28,16 @@ def get_batch(mode):
 
 # warmup learning rate e Cosine decay implementare
 def get_lr(iteration):
-    if iteration < warmup_iters: 
-        return learning_rate * (iteration + 1) / (warmup_iters + 1)
+    # inizio training si alza il learning rate
+    if iteration < warmup_iters:
+         return (iteration + 1) * learning_rate / (warmup_iters + 1)
+    elif (iteration > lr_decay_iters):
+        return min_lr
+    
+    decay_ratio = (iteration - warmup_iters) / (lr_decay_iters - warmup_iters)
+    coeff = 1 + math.cos(math.pi * decay_ratio)
+    # finito il warm up si cerca di abbassarlo cosi che non si abbia divergenza
+    return min_lr + 0.5 * (learning_rate - min_lr) * coeff
 
 m = miniGPT(configGPT)
 num_parameters = m.get_params()
@@ -37,7 +47,6 @@ loss_array = []
 
 # questo tipo di allenamento con epoch viene usato di solito con piccoli dataset
 '''
-
 for id_epoch in range(epoch):
     for id_batch in range(amount_batch):
         x, y = get_batch("train")
@@ -53,6 +62,22 @@ for id_epoch in range(epoch):
 
 # loop di allenamento
 x, y = get_batch("train")
+
+
+'''
+array_lr = []
+for x in range(max_iters):
+    prova = get_lr(x)
+    array_lr.append(prova)
+    print(prova)
+
+print(len(array_lr))
+plt.axis((0, max_iters, 0 ,max(array_lr)))
+plt.xlabel('iteration')
+plt.ylabel('lr')
+plt.plot(array_lr)
+plt.show()
+'''
 
 while True:
 
@@ -82,6 +107,7 @@ plt.xlabel("id_batch")
 plt.ylabel("Loss")
 plt.plot(loss_array)
 plt.show()
+
 
 # si prendono i logits dell ultimo token 
 # last_token = logits[:, -1, :] 
