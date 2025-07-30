@@ -1,5 +1,6 @@
-from prepare import train_data, val_data, vocab_size, n
+from prepare import train_data, val_data, n, decode
 import torch
+from torch.nn import functional as F
 from model import miniGPT , configGPT
 import matplotlib.pyplot as plt
 import math
@@ -60,9 +61,6 @@ for id_epoch in range(epoch):
     print(f"eseguito batch numero: {id_epoch}")
 '''
 
-# loop di allenamento
-x, y = get_batch("train")
-
 
 '''
 array_lr = []
@@ -80,21 +78,43 @@ plt.show()
 '''
 
 while True:
+    # inferance ogni 250 step 
+    if iter_num % 250 == 0:
+        m.eval()
+        with torch.no_grad():
+            x, y = get_batch('')
+            loss, logit = m(x)
+            # calcolo probabilità su ultimi token di ogni row
+            probabilityes = F.softmax(logit, dim=-1)
+            # presa di solo 30 token con propbabilità più alta 
+            token_prob, tokens_index = torch.topk(probabilityes, 30, dim=-1)
+            # ottenimento di un token randomico
+            token_index = torch.multinomial(tokens_index.float(), 1)
+            # concatenazione del token con la frase 
+            out = torch.cat((x , token_index), dim=1)
 
-    lr = get_lr(iter_num)
-    for param_group in optimizer.param_groups:
-        param_group["lr"] = lr
+            for row in range(batch):
+                sentence = decode(out[row].tolist())
+                print(f"batch numero {batch}")
+                print(f"token predetto --> {sentence[-1]}")
+                print(f"frase {row} --> {sentence}")
+                print("----------------------------")
+            
+    else:
+        lr = get_lr(iter_num)
+        for param_group in optimizer.param_groups:
+            param_group["lr"] = lr
 
-    loss, logit = m(x, y)
+        x, y = get_batch("train")
+        loss, logit = m(x, y)
 
-    print(f"step: {iter_num}, Loss: {loss}")
+        print(f"step: {iter_num}, Loss: {loss}")
 
-    loss_array.append(loss.data)
-    x, y = get_batch("train")
-    loss.backward()
+        loss_array.append(loss.data)
+        loss.backward()
 
-    optimizer.step()
-    optimizer.zero_grad()
+        optimizer.step()
+        optimizer.zero_grad()
 
     iter_num += 1
 
@@ -107,17 +127,3 @@ plt.xlabel("id_batch")
 plt.ylabel("Loss")
 plt.plot(loss_array)
 plt.show()
-
-
-# si prendono i logits dell ultimo token 
-# last_token = logits[:, -1, :] 
-# grazie alla softmax si ottiene la probabilita dell'ultimo token
-# probability = F.softmax(last_token, dim=-1) 
-# si scelgono i 50 token con la probabilità più alta
-# token_prob, token_index = torch.topk(probability, 50, dim=-1) # forma: (batch, 50)
-# si prende l'indice di un singolo token da quei 50 token (ognuno ha una probabilità distribuita per essere scelto)
-# id_random_token_prob = torch.multinomial(token_prob, 1) # forma: (batch, 1)
-# grazie all'indice si prende il token da token_prob  
-# random_token_prob = torch.gather(token_prob, id_random_token_prob, dim=-1) # forma: (batch, 1)
-# si attaccano i token alle proprie row 
-# x = torch.cat((x, random_token_prob), dim=1) # forma: (batch, content_window + 1)

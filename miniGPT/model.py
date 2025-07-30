@@ -163,7 +163,7 @@ class miniGPT(nn.Module):
         n_params -= n_params_position_embedding
         return n_params
 
-    def forward(self, x, target):
+    def forward(self, x, target=None):
         # si ottiene la dimensione del tensor
         B, T = x.size()
         position_token = torch.arange(0, T, dtype=torch.long)
@@ -177,10 +177,6 @@ class miniGPT(nn.Module):
             x = block(x)
         
         logits = self.transformer.ln_f(x)
-
-        logits = self.linear(x)  # Forma: (batch, token, vocab_size), cioè (B, T, C)
-        # Forma: (batch, token, vocab_size) si ha questa forma essendo che si deve prevedere il token successivo su tutti i possibili token 
-        B, T, C = logits.size()
     
         '''
         la loss viene calcolata per la predizione del token successivo dopo che si fa la softmax 
@@ -189,9 +185,16 @@ class miniGPT(nn.Module):
         il token ciao avrà prodotto un vettore di probabilità [0.2, 0.3, 2]
         se 'come' ha indice 1 allora si prende 0.3 e si farà la formula di immagine Cross_entropy_loss_2 e Cross_entropy_loss
         '''
+        if target == None:
+            logits = self.linear(x[:, -1, :])  # Forma: (batch, token, vocab_size), cioè (B, T, C)
+            loss = None
 
-        # la cross_entropy fa gia di suo internamente una softmax
-        loss = F.cross_entropy(logits.view(B*T, C), target.view(B*T))
+        else:
+            logits = self.linear(x)  # Forma: (batch, token, vocab_size), cioè (B, T, C)
+            # Forma: (batch, token, vocab_size) si ha questa forma essendo che si deve prevedere il token successivo su tutti i possibili token 
+            B, T, C = logits.size()
+            # la cross_entropy fa gia di suo internamente una softmax
+            loss = F.cross_entropy(logits.view(B*T, C), target.view(B*T))
 
         return loss, logits
        
