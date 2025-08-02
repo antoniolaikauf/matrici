@@ -1,7 +1,8 @@
-from prepare import train_data, val_data, n, decode
+from prepare import train_data, val_data, n, decode, encode
 import torch
 from torch.nn import functional as F
-from model import miniGPT , configGPT
+from model import miniGPT
+from config import configGPT
 import matplotlib.pyplot as plt
 import math
 
@@ -10,10 +11,12 @@ min_lr = 6e-5 # minimum learning rate, should be ~= learning_rate/10 per Chinchi
 warmup_iters = 2000 # how many steps to warm up for
 lr_decay_iters = 600000 # should be ~= max_iters per Chinchilla
 
-content_window = 8 # quantità token inseriti all'interno del modello
-batch = 4
-epoch = 1
+block_size = 32 # quantità token inseriti all'interno del modello
+batch = 12
 amount_batch = n // batch # quantità totale di batch per ogni epoch
+nums_samples = 10 # quantità di frasi generate dal modello
+max_new_tokens = 16 # quantità di token generati dal sample
+top_k = 20
 
 max_iters = 600000 # total number of training iterations
 iter_num = 0 # numero attuale di iterazione
@@ -21,9 +24,9 @@ iter_num = 0 # numero attuale di iterazione
 def get_batch(mode):
     if mode == 'train': data = train_data
     else: data = val_data
-    id = torch.randint(len(data) - content_window,(batch,)) # range in cui prendere i token e quanti prenderne
-    x = torch.stack([data[id_x:id_x + content_window] for id_x in id])
-    y = torch.stack([data [id_y + 1:id_y + content_window + 1] for id_y in id])
+    id = torch.randint(len(data) - block_size,(batch,)) # range in cui prendere i token e quanti prenderne
+    x = torch.stack([data[id_x:id_x + block_size] for id_x in id])
+    y = torch.stack([data [id_y + 1:id_y + block_size + 1] for id_y in id])
 
     return x, y
 
@@ -48,6 +51,8 @@ loss_array = []
 
 # questo tipo di allenamento con epoch viene usato di solito con piccoli dataset
 '''
+epoch = 1
+
 for id_epoch in range(epoch):
     for id_batch in range(amount_batch):
         x, y = get_batch("train")
@@ -81,25 +86,33 @@ while True:
     # inferance ogni 250 step 
     if iter_num % 250 == 0:
         m.eval()
+        start = encode("\n")
+        x = torch.tensor([start], dtype=torch.long).view(1,-1)
         with torch.no_grad():
-            x, y = get_batch('')
-            loss, logit = m(x)
-            # calcolo probabilità su ultimi token di ogni row
-            probabilityes = F.softmax(logit, dim=-1)
-            # presa di solo 30 token con propbabilità più alta 
-            token_prob, tokens_index = torch.topk(probabilityes, 30, dim=-1)
-            # ottenimento di un token randomico
-            token_index = torch.multinomial(tokens_index.float(), 1)
-            # concatenazione del token con la frase 
-            out = torch.cat((x , token_index), dim=1)
-
-            for row in range(batch):
-                sentence = decode(out[row].tolist())
-                print(f"batch numero {batch}")
-                print(f"token predetto --> {sentence[-1]}")
-                print(f"frase {row} --> {sentence}")
+            for k in range(nums_samples):
+                # si passa al modello un input vuoto per iniziare e quindi si passa il carattere \n
+                y = m.generate(x, max_new_tokens, top_k=top_k)
+                sentence = decode(y[0].tolist())
+                print(sentence)
                 print("----------------------------")
-            
+
+            # x, y = get_batch('')
+            # loss, logit = m(x)
+            # # calcolo probabilità su ultimi token di ogni row
+            # probabilityes = F.softmax(logit, dim=-1)
+            # # presa di solo 30 token con propbabilità più alta 
+            # token_prob, tokens_index = torch.topk(probabilityes, 30, dim=-1)
+            # # ottenimento di un token randomico
+            # token_index = torch.multinomial(tokens_index.float(), 1)
+            # # concatenazione del token con la frase 
+            # out = torch.cat((x , token_index), dim=1)
+
+            # for row in range(batch):
+            #     sentence = decode(out[row].tolist())
+            #     print(f"batch numero {batch}")
+            #     print(f"token predetto --> {sentence[-1]}")
+            #     print(f"frase {row} --> {sentence}")
+                 
     else:
         lr = get_lr(iter_num)
         for param_group in optimizer.param_groups:

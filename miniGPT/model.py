@@ -1,16 +1,7 @@
 from torch import nn
 import torch
-from prepare import vocab_size
 import math
 from torch.nn import functional as F
-
-configGPT = {
-    'n_head' : 8,
-    'n_embd' : 512, 
-    'vocab_size' : vocab_size,
-    'n_layer' : 6,
-    'contex_size': 8 
-}
 
 class Attention(nn.Module):
     def __init__(self, config):
@@ -35,7 +26,7 @@ class Attention(nn.Module):
         k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_k)
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (batch, head, token, d_v)
 
-        att = (q @ k.transpose(2, 3)) / (math.sqrt(k.size(-1))) # forma: (batch, n_head, token, token)
+        att = (torch.matmul(q, k.transpose(2, 3))) / (math.sqrt(k.size(-1))) # forma: (batch, n_head, token, token)
         '''
         0 è la diagonale principale  se si volesse far si che non passasse per la diagonale principale allora si modifica quel parametro
         es. diagonal = 0 
@@ -55,7 +46,7 @@ class Attention(nn.Module):
         att = att.masked_fill(mask == False, -float('inf'))
         # print(att[0][0])
         att = self.softmax(att) # forma : (batch, n_head, token, token)
-        y = att @ v
+        y = torch.matmul(att, v)
         
         '''
         y forma : (batch, n_head, token, d_v) 
@@ -115,7 +106,7 @@ class miniGPT(nn.Module):
         self.config = config
         self.transformer = nn.ModuleDict(dict(
             w_token_embedding = nn.Embedding(config['vocab_size'], config['n_embd']),
-            w_position_embedding = nn.Embedding(config['contex_size'], config['n_embd']), # non si sta usando la sinusoide position encoding ma si sta usando la absolute position encoding (apprendibile)
+            w_position_embedding = nn.Embedding(config['block_size'], config['n_embd']), # non si sta usando la sinusoide position encoding ma si sta usando la absolute position encoding (apprendibile)
             # h = hidden
             h = nn.ModuleList([Block(config) for _ in range(config['n_layer'])]),
             # qua nel paper hanno messo un altro layer normalization
@@ -197,11 +188,21 @@ class miniGPT(nn.Module):
             loss = F.cross_entropy(logits.view(B*T, C), target.view(B*T))
 
         return loss, logits
-       
+    
+    @torch.no_grad()
+    def generate(self, x, max_new_tokens, top_k):
+        # generazione della frase
+        for _ in range(max_new_tokens):
+            assert  max_new_tokens < 32 # controllo che i token non superino block_size
 
-# m = miniGPT(configGPT)
-# m("qua si passerà l'intero batch ")
-# print(m(torch.randint(0, 6, (2,8))))
+            loss, logits = self(x)
+            prob = F.softmax(logits, dim=-1)
+            # preso solo tot token (top_k) con i risultati più alti 
+            token_prob, tokens_index = torch.topk(prob, top_k, dim=-1)
+            # preso token randomico
+            id_next = torch.multinomial(tokens_index.float(), 1)
+            # concatenazione del token
+            x = torch.cat((x, id_next), dim=1)
 
-# print(m.get_params())
-# print(configGPT['vocab_size'])
+        return x
+        
