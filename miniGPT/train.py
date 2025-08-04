@@ -24,10 +24,15 @@ iter_num = 0 # numero attuale di iterazione
 def get_batch(mode):
     if mode == 'train': data = train_data
     else: data = val_data
-    id = torch.randint(len(data) - block_size,(batch,)) # range in cui prendere i token e quanti prenderne
-    x = torch.stack([data[id_x:id_x + block_size] for id_x in id])
-    y = torch.stack([data [id_y + 1:id_y + block_size + 1] for id_y in id])
-
+    # si trova un punto randomico del dataset da cui iniziare
+    id = torch.randint(len(data) - block_size, (1,)) 
+    # si prende una row di  (batch * block_size) + 1, piu uno perchè bisogna prevedere il token successivo anche dell'ultimo
+    # token di ogni row e senza quel più uno si andrebbe oltre e darebbe errore
+    buf = torch.tensor(data[id:id + (batch * block_size) + 1])
+    # creazione degli input x e label y (output che deve prevedere)
+    x = buf[:-1].view(batch, block_size)
+    y = buf[1:].view(batch, block_size)
+    
     return x, y
 
 # warmup learning rate e Cosine decay implementare
@@ -49,6 +54,8 @@ print(f"numero totale dei parametri del modello: {num_parameters}")
 optimizer = torch.optim.SGD(m.parameters(), lr=learning_rate, momentum=0.9)
 loss_array = []
 
+# get_batch('train')
+# exit()
 # questo tipo di allenamento con epoch viene usato di solito con piccoli dataset
 '''
 epoch = 1
