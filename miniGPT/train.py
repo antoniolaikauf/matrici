@@ -32,7 +32,7 @@ def get_batch(mode):
     # creazione degli input x e label y (output che deve prevedere)
     x = buf[:-1].view(batch, block_size)
     y = buf[1:].view(batch, block_size)
-    
+
     return x, y
 
 # warmup learning rate e Cosine decay implementare
