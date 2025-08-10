@@ -33,7 +33,9 @@ x_glu = x_glu.clamp(min=None, max=limit)
 x_linear = x_linear.clamp(min=-limit, max=limit)
 quando il min è impostato a None allora non ci sarà un minimo in questo caso.
 - intermediate_size: consiste nella dimensione dei parametri weight e bias nel blocco del MLP, dentro alla classe MLPBlock viene raddoppiato, quindi il vettore processato al suo interno diventerà il doppio.
-
+- num_experts: parametro usato nell MLP nell'architettura Mixture of Experts
+- experts_per_token: indica quanti experts sono usati per processare i token 
+- initial_context_length: quantità di token che il modello può processare alla volta
 
 classe Transformer è formata da:
 - self.embedding che consiste nel Emebedding del token che va da **config.vocab_size**, fino a n_embedding, qua invece lo chiamano **config.hidden_size**
@@ -42,4 +44,4 @@ classe Transformer è formata da:
 
 
 SEE YOU LATER, THEY HAVE JUST RELEASE GPT-5
-UPDATE 10/08/2025 GPT-5WHEN AGI ??
+UPDATE 10/08/2025 GPT-5 WHEN AGI ??
