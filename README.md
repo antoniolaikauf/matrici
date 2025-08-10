@@ -433,3 +433,4 @@ ci possono  essere più approcci:
   TF-IDF non crea embeding ma vettori sparsi che si basano sulla frequenza della parola e non cattura nessun significato 
   word2vec crea embedding statici e considera solo le parole vicino e non nell'intera frase
   BERT crea embedding dinamici che sono contestualizzati in base alla frase  
+
