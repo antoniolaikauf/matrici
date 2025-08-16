@@ -103,7 +103,7 @@ Blocco di TransformerBlock formato da:
 ```
 
 AttentionBlock non sarebbe la classica attention in cui ogni head utilizza le proprie Q, K ,V.
-l'attention usata in gpt-oss è chiamata **Multy query attention**, il suo funzionamento consiste nel usare le K, V per un gruppo di head delle Q in questo caso le head delle Q sono 64 e invece quelle delle K, V sono 8, quindi un gruppo di 8 Q usera solo una delle K, V. <br>
+l'attention usata in gpt-oss è chiamata **Grouped Query Attention**, il suo funzionamento consiste nel usare le K, V per un gruppo di head delle Q in questo caso le head delle Q sono 64 e invece quelle delle K, V sono 8, quindi un gruppo di 8 Q usera solo una delle K, V. <br>
 Inoltre al posto di utilizzare la classica position embedding absolute o sinusoidale quella apprendibile utilizza la **Rotary position embedding**  
 Blocco di AttentionBlock formato da:
 
@@ -111,12 +111,12 @@ Blocco di AttentionBlock formato da:
 - self.num_attention_heads: quantità di head per le Q.
 - self.num_key_value_heads: quantità di head per le K, V.
 - self.sliding_window: quanità di token a un singolo token può attendere o guardare indietro, questo permette di risparmiare risorse ma il compormesso è che in frasi lunghe i token che sono distanti tra di loro non si relazionano.
-- self.sinks:
+- self.sinks: tensor di numeri randomici che viene concatenato durante la scaled dot product attention dopo aver effetuato la maschera, questo permette di abbassare la probabilità di ogni token quando avviene la softmax, perchè si aggiungono valori che verranno sommati al denominatore per ogni token. Questo permette al modello di essere più stabile soprattutto se molto grande.
 - self.norm: consiste nella normalizzazione **dell'hidden_state** cosi che abbiano un valore coerente e non troppo diverso tra di loro
 - qkv_dim: dimensioni del vettore formato dalle Q, K, V. lunghezza 5120.
 - self.qkv: linearizzazione standard di torch x*w + q. l'output di questa linearizzazione è di **qkv_dim**
 - self.out: linearizzazione standard di torch x*w + q. l'output di questa linearizzazione è di **config.hidden_size**
-- self.sm_scale: 
+- self.sm_scale: valore usato per scalare i valori dopo la moltiplicazione delle matrici tra Q e K per far si che i valori non abbiano valori troppo grandi
 - self.rope: classe che permette al modello di capire la posizione dei token **Rotary position embedding**
 
 ```
@@ -161,6 +161,48 @@ Blocco di AttentionBlock formato da:
             device=device,
         )
 ```
+
+il processo principale della classe AttentionBlock è il **scaled dot product attention**
+
+```
+def sdpa(Q, K, V, S, sm_scale, sliding_window=0):
+    # sliding_window == 0 means no sliding window
+    n_tokens, n_heads, q_mult, d_head = Q.shape
+    assert K.shape == (n_tokens, n_heads, d_head)
+    assert V.shape == (n_tokens, n_heads, d_head)
+    K = K[:, :, None, :].expand(-1, -1, q_mult, -1)
+    V = V[:, :, None, :].expand(-1, -1, q_mult, -1)
+    S = S.reshape(n_heads, q_mult, 1, 1).expand(-1, -1, n_tokens, -1)
+    mask = torch.triu(Q.new_full((n_tokens, n_tokens), -float("inf")), diagonal=1)
+    if sliding_window > 0:
+        mask += torch.tril(
+            mask.new_full((n_tokens, n_tokens), -float("inf")), diagonal=-sliding_window
+        )
+    QK = torch.einsum("qhmd,khmd->hmqk", Q, K)
+    QK *= sm_scale
+    QK += mask[None, None, :, :]
+    QK = torch.cat([QK, S], dim=-1)
+    W = torch.softmax(QK, dim=-1)
+    W = W[..., :-1]
+    attn = torch.einsum("hmqk,khmd->qhmd", W, V)
+    return attn.reshape(n_tokens, -1)
+```
+
+questo sarebbe come detto prima una variante della classica attention del paper [**Attention is all you need**](https://arxiv.org/abs/1706.03762) perchè consiste in una **Grouped Query Attention**
+
+Il primo passo consiste nel modificare i tensori K e V per allinearli dimensionalmente alle query (Q). Inizialmente, K e V hanno forma [initial_context_length, num_key_value_heads, head_dim]. Con K[:, :, None, :] e V[:, :, None, :], si aggiunge una nuova dimensione, ottenendo [initial_context_length, num_key_value_heads, 1, head_dim]. Successivamente, con .expand(-1, -1, q_mult, -1), questa dimensione viene espansa a q_mult (dove q_mult = num_attention_heads // num_key_value_heads), mentre le altre dimensioni rimangono invariate (-1). Il risultato è un tensore di forma [initial_context_length, num_key_value_heads, q_mult, head_dim], compatibile con Q per il calcolo dell'attenzione.
+
+Il procedimento per calcolare l'attention è uguale a quello del paper ma l'unica differenza è che prima della softmax viene concatenato un tensor S che ho gia spiegato prima
+
+- QK = torch.einsum("qhmd,khmd->hmqk", Q, K) moltiplicazioni tra Q e K 
+- QK *= sm_scale valori scalati in modo tale che non raggiungano valori troppo grandi 
+- QK += mask[None, None, :, :] aggiunta della mask 
+- QK = torch.cat([QK, S], dim=-1) concatenazione del tensore S
+- W = torch.softmax(QK, dim=-1) calcolo delle probabilità sull'ultima dimensione
+- W = W[..., :-1] rimuove l'ultima colonna dell'ultima dimensione perchè farebbe riferimento al tensore S 
+- attn = torch.einsum("hmqk,khmd->qhmd", W, V) moltiplicazione tra tensori di W e V 
+- return attn.reshape(n_tokens, -1) ridimensionamento del tensore
+
 
 SEE YOU LATER, THEY HAVE JUST RELEASE GPT-5
 UPDATE 10/08/2025 GPT-5 WHEN AGI ??
