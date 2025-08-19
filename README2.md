@@ -114,8 +114,8 @@ Blocco di AttentionBlock formato da:
 - self.sinks: tensor di numeri randomici che viene concatenato durante la scaled dot product attention dopo aver effetuato la maschera, questo permette di abbassare la probabilità di ogni token quando avviene la softmax, perchè si aggiungono valori che verranno sommati al denominatore per ogni token. Questo permette al modello di essere più stabile soprattutto se molto grande.
 - self.norm: consiste nella normalizzazione **dell'hidden_state** cosi che abbiano un valore coerente e non troppo diverso tra di loro
 - qkv_dim: dimensioni del vettore formato dalle Q, K, V. lunghezza 5120.
-- self.qkv: linearizzazione standard di torch x*w + q. l'output di questa linearizzazione è di **qkv_dim**
-- self.out: linearizzazione standard di torch x*w + q. l'output di questa linearizzazione è di **config.hidden_size**
+- self.qkv: trasformazione lineare standard di torch x*w + q. l'output di questa trasformazione lineare è di **qkv_dim**
+- self.out: trasformazione lineare standard di torch x*w + q. l'output di questa trasformazione lineare è di **config.hidden_size**
 - self.sm_scale: valore usato per scalare i valori dopo la moltiplicazione delle matrici tra Q e K per far si che i valori non abbiano valori troppo grandi
 - self.rope: classe che permette al modello di capire la posizione dei token **Rotary position embedding**
 
@@ -202,6 +202,112 @@ Il procedimento per calcolare l'attention è uguale a quello del paper ma l'unic
 - W = W[..., :-1] rimuove l'ultima colonna dell'ultima dimensione perchè farebbe riferimento al tensore S 
 - attn = torch.einsum("hmqk,khmd->qhmd", W, V) moltiplicazione tra tensori di W e V 
 - return attn.reshape(n_tokens, -1) ridimensionamento del tensore
+
+MLPBlock (multy layer perception) è la classe che viene subito dopo il blocco AttentionBlock, il blocco della multy layer perception o a volte chiamato **feed foward network** viene inserito cosi da dare al modello la non linearità cosi che il modello riesca ad apprendere relazioni non lineari (pattern o dati che non possono essere descritte con un afunzione lineare).
+
+parametri già spiegati sopra
+- self.experts_per_token = config.experts_per_token
+- self.swiglu_limit = config.swiglu_limit
+- self.world_size: quanti processi (GPU/CPU) si sta usando per l'allenamento del modelo
+- self.norm: consiste nella funzione di normalizzazione 
+- self.gate: trasformazione lineare
+- self.mlp1_weight: pesi della prima trasformazione lineare
+- self.mlp1_bias: bias della prima trasformazione lineare
+- self.mlp2_weight: pesi della seconda traformazione lineare
+- self.mlp2_bias: bias della seconda trasformazione lineare 
+
+```
+ self.num_experts = config.num_experts
+        self.experts_per_token = config.experts_per_token
+        self.swiglu_limit = config.swiglu_limit
+        self.world_size = dist.get_world_size() if dist.is_initialized() else 1
+        self.norm = RMSNorm(config.hidden_size, device=device)
+        self.gate = torch.nn.Linear(
+            config.hidden_size, config.num_experts, device=device, dtype=torch.bfloat16
+        )
+        assert config.intermediate_size % self.world_size == 0
+        self.mlp1_weight = torch.nn.Parameter(
+            torch.empty(
+                (
+                    config.num_experts,
+                    config.intermediate_size * 2 // self.world_size,
+                    config.hidden_size,
+                ),
+                device=device,
+                dtype=torch.bfloat16,
+            )
+        )
+        self.mlp1_bias = torch.nn.Parameter(
+            torch.empty(
+                (config.num_experts, config.intermediate_size * 2 // self.world_size),
+                device=device,
+                dtype=torch.bfloat16,
+            )
+        )
+        self.mlp2_weight = torch.nn.Parameter(
+            torch.empty(
+                (
+                    config.num_experts,
+                    config.hidden_size,
+                    config.intermediate_size // self.world_size,
+                ),
+                device=device,
+                dtype=torch.bfloat16,
+            )
+        )
+        self.mlp2_bias = torch.nn.Parameter(
+            torch.empty(
+                (config.num_experts, config.hidden_size),
+                device=device,
+                dtype=torch.bfloat16,
+            )
+        )
+```
+
+- t = self.norm(x): avviene la normalizzazione dell'input questo perchè prima di processare l'input avviene la **residual connection** che consiste in una add e norm. Si esegue una residual connection perchè con modelli molto complessi si richia di avere il problema del [vanishing gradient problem](https://arxiv.org/abs/1211.5063). 
+- g = self.gate(t): prima trasformazione lineare che serve per scegliere quali experts processeranno i token
+
+- experts = torch.topk(g, k=self.experts_per_token, dim=-1, sorted=True) 
+  expert_weights = torch.nn.functional.softmax(experts.values, dim=1)
+  expert_indices = experts.indices
+  procedimento della sceglita degli [expert](https://arxiv.org/abs/2403.07816) questo processo avviene solo durante l'allenamento e inferenza e permette di selezzionare un gruppo di neuroni cosi che diminuisca il tempo di allenamento e permette anche di specializzare gli expert in base agli input.
+
+- mlp1_weight = self.mlp1_weight[expert_indices, ...], mlp1_bias = self.mlp1_bias[expert_indices, ...]: selezione dei pesi e delle bias degli expert nella prima trasformaziuone lineare
+- t = torch.einsum("beck,bk->bec", mlp1_weight, t) + mlp1_bias: prima trasformazione lineare x*w + b
+- t = swiglu(t, limit=self.swiglu_limit): activation function che permette di dare la non linearità
+- mlp2_weight = self.mlp2_weight[expert_indices, ...] mlp2_bias = self.mlp2_bias[expert_indices, ...]: selezione dei pesi e delle bias degli expert nella seconda trasformaziuone lineare
+-  t = torch.einsum("beck,bek->bec", mlp2_weight, t): seconda trasformazione lineare
+- dist.all_reduce(t, op=dist.ReduceOp.SUM): permette di sommare tutti i tensori tra tutti i processi e distribuire il risultato ad essi
+- t += mlp2_bias: aggiunta della bias finale
+- t = torch.einsum("bec,be->bc", t, expert_weights) si calcolano i pesi degli experts con l'output degli expert scelti 
+![](image/experts.png)
+- return x + t: si fa l'add della residual connection 
+```
+def forward(self, x: torch.Tensor) -> torch.Tensor:
+        t = self.norm(x) 
+        g = self.gate(t) 
+        experts = torch.topk(g, k=self.experts_per_token, dim=-1, sorted=True) 
+        expert_weights = torch.nn.functional.softmax(experts.values, dim=1)
+        expert_indices = experts.indices
+
+        mlp1_weight = self.mlp1_weight[expert_indices, ...]
+        mlp1_bias = self.mlp1_bias[expert_indices, ...]
+ 
+        t = torch.einsum("beck,bk->bec", mlp1_weight, t) + mlp1_bias
+        t = swiglu(t, limit=self.swiglu_limit)
+
+        mlp2_weight = self.mlp2_weight[expert_indices, ...]
+        mlp2_bias = self.mlp2_bias[expert_indices, ...]
+        t = torch.einsum("beck,bek->bec", mlp2_weight, t)
+        if self.world_size > 1:
+            dist.all_reduce(t, op=dist.ReduceOp.SUM)
+        t += mlp2_bias
+
+        # Weighted sum of experts
+        t = torch.einsum("bec,be->bc", t, expert_weights)
+
+        return x + t
+```
 
 
 SEE YOU LATER, THEY HAVE JUST RELEASE GPT-5
