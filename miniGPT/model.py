@@ -189,6 +189,7 @@ class miniGPT(nn.Module):
 
         return loss, logits
     
+    # processo di inferance
     @torch.no_grad()
     def generate(self, x, max_new_tokens, top_k):
         # generazione della frase

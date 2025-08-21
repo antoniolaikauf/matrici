@@ -309,6 +309,134 @@ def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x + t
 ```
 
+processo di inferance
+TokenGenerator
+```
+@torch.inference_mode()
+    def __init__(self, checkpoint: str, device: torch.device):
+        self.device = device
+        self.model = Transformer.from_checkpoint(checkpoint, device=self.device)
+```
+
+la funzione from_checkpoint permette di caricare la configurazione del modello da un file json
+e caricarlo nel modello.
+dopo si mette il modelo in eval cosi che non avvengano degli aggiornamenti dei parametri
+
+- my_rank: ritorna il rank (numero) del processo attuale
+- world_size: ritorna quanti processi disponibili per il modello
+- per_rank_intermediate_size: rappresenta la lunghezza del tensor che ogni processo elaborerà all'interno del MLP
+
+my_rank = dist.get_rank() if dist.is_initialized() else 0
+world_size = dist.get_world_size() if dist.is_initialized() else 1
+per_rank_intermediate_size = config.intermediate_size // world_size
+
+si esegue un ciclo for su tutti i parametri del modello for name, param in model.named_parameters():
+questo ritorna sia il nome del parametri compreso il nome della variabile a cui viene assegnata e anche la loro dimensione e vengono caricate i pesi.
+Alla fine ritorna il modello.
+
+```
+@staticmethod
+    def from_checkpoint(
+        path: str, device: str | torch.device = "cuda"
+    ) -> "Transformer":
+        if not isinstance(device, torch.device):
+            device = torch.device(device)
+        
+        config_path = os.path.join(path, "config.json")
+        with open(config_path, "r") as f:
+            json_config = json.load(f)
+            config = ModelConfig(**json_config)
+
+        model = Transformer(
+            config=config,
+            device=device,
+        )
+        model.eval()
+
+        # Load weights
+        my_rank = dist.get_rank() if dist.is_initialized() else 0
+        world_size = dist.get_world_size() if dist.is_initialized() else 1
+        per_rank_intermediate_size = config.intermediate_size // world_size
+
+        checkpoint = Checkpoint(path, device)
+
+        for name, param in model.named_parameters():
+            loaded_tensor = checkpoint.get(name)
+
+            # Note: it would be more efficient to do sharding before upcasting from MXFP4,
+            # but for simplicity we do it after.
+            if "mlp1" in name:  # both weight and bias
+                loaded_tensor = loaded_tensor[
+                    :,
+                    my_rank * 2
+                    * per_rank_intermediate_size : (my_rank + 1) * 2
+                    * per_rank_intermediate_size,
+                    ...,
+                ]
+            elif "mlp2_weight" in name:  # only weight
+                loaded_tensor = loaded_tensor[
+                    ...,
+                    my_rank
+                    * per_rank_intermediate_size : (my_rank + 1)
+                    * per_rank_intermediate_size,
+                ]
+            try:
+                param.data.copy_(loaded_tensor)
+            except:
+                print(f"{name=} {param.data.shape=} {loaded_tensor.shape=}")
+                raise
+
+        return model
+```
+- @torch.inference_mode(): permette di migliorare l'inferance non calcolando i gradianti
+
+questa funzione prende
+- prompt_tokens: frase iniziale da cui partire
+- temperature: rappresenta la rigidità del modello, più è bassa e più il modello andra fuori strada a dare una risposta
+- max_tokens: quanti token il modello deve restituire durante l'inferance
+- return_logprobs: ritorna la probabilità del token scelto
+- stop_tokens: token che dicono al modello quando fermarsi se non si è ancora raggiunto il max_tokens
+
+la funzione consiste in un ciclo infinito nel quale ogni ciclo il modello prevede un token, questo ciclo finisce in due modi:
+
+1. max_tokens == 0 questo condizione nel while permette di continuare all'infinito fino a quando il token predetto non è uno dei token **stop_tokens**
+2. num_generated_tokens < max_tokens questa condizione permette di continuare fino a quando i token generati dal modello non raggiungono il numero di max_tokens scelto
+
+il modello prevede i token, quando la temperature è a 0 allora prende quello con la probabilità più alta, se no si fa una softmax con la temperature probs = torch.softmax(logits * (1.0 / temperature), dim=-1) e dopo si sceglie un token randomico predicted_token = torch.multinomial(probs, num_samples=1).item()
+e alla fine si incrementa num_generated_tokens.
+
+se return_logprobs è attiva allora ritorna la probabilita con cui il modello ha scelto quel token questa ti permette di ritornare la probabilità vera e propria invece di quella influenzata dalla **temperatura**.
+
+```
+@torch.inference_mode()
+    def generate(self,
+                 prompt_tokens: list[int],
+                 stop_tokens: list[int],
+                 temperature: float = 1.0,
+                 max_tokens: int = 0,
+                 return_logprobs: bool = False):
+        tokens = list(prompt_tokens)
+        num_generated_tokens = 0
+        while max_tokens == 0 or num_generated_tokens < max_tokens:
+            logits = self.model(torch.as_tensor(tokens, dtype=torch.int32, device=self.device))[-1]
+            if temperature == 0.0:
+                predicted_token = torch.argmax(logits, dim=-1).item()
+            else:
+                probs = torch.softmax(logits * (1.0 / temperature), dim=-1)
+                predicted_token = torch.multinomial(probs, num_samples=1).item()
+            tokens.append(predicted_token)
+            num_generated_tokens += 1
+
+            if return_logprobs:
+                logprobs = torch.log_softmax(logits, dim=-1)
+                selected_logprobs = logprobs[predicted_token].item()
+                yield predicted_token, selected_logprobs
+            else:
+                yield predicted_token
+
+            if predicted_token in stop_tokens:
+                break
+```
 
 SEE YOU LATER, THEY HAVE JUST RELEASE GPT-5
 UPDATE 10/08/2025 GPT-5 WHEN AGI ??
